@@ -9,7 +9,9 @@ app.commandLine.appendSwitch('disable-background-timer-throttling');
 app.commandLine.appendSwitch('disable-renderer-backgrounding');
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
-const DATA_FILE = path.join(__dirname, 'user_data.json');
+const DATA_FILE = app.isPackaged
+  ? path.join(app.getPath('userData'), 'user_data.json')
+  : path.join(__dirname, 'user_data.json');
 const WIDGET_WIDTH = 720;
 const COMPACT_HEIGHT = 200;
 const EXPANDED_HEIGHT = 760;
@@ -65,6 +67,7 @@ function saveUserData() {
       last_channel: currentChannel ? String(currentChannel.number) : '71',
       custom_channels: customChannels
     };
+    fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
     fs.writeFileSync(DATA_FILE, JSON.stringify(payload, null, 2), 'utf-8');
   } catch (e) {
     console.error('Failed to save user_data.json:', e);

@@ -4,12 +4,36 @@
   "description": "Sleek Windows 11 Desktop Widget for SiriusXM",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build": "electron-builder --win portable"
   },
-  "dependencies": {
-    "electron-winstaller": "^5.4.0"
+  "build": {
+    "appId": "com.de4d5y.sxmwidget",
+    "productName": "SiriusXM Widget",
+    "files": [
+      "main.js",
+      "preload.js",
+      "ui.html",
+      "channels.js",
+      "free_channels.js",
+      "icon.ico",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "icon.ico",
+      "artifactName": "SiriusXM-Widget-${version}-Portable.exe"
+    }
   },
   "devDependencies": {
-    "electron": "^45.2.3"
+    "electron": "^45.2.3",
+    "electron-builder": "^26.0.12"
   }
 }

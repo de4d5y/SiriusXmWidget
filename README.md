@@ -21,12 +21,17 @@ A lightweight Windows desktop radio widget for SiriusXM built with Electron.
 - 9 built-in themes (Christmas, Blizzard, Thanksgiving, Pumpkin Spice, Autumn Woods, Hearth Gold, Midnight, Synthwave, NyQuil)
 - Includes free holiday stream channels plus full SiriusXM web player integration
 
-## Prerequisites
-- **Windows 10 / 11**
-- **Node.js (LTS)** — download and install from [nodejs.org](https://nodejs.org/) (this includes `npm`, which handles all app dependencies automatically; no Python or extra tools are needed)
-- A **SiriusXM streaming account** (for full channel access)
-
 ## Installation
+
+### Option 1: Download the Portable `.exe` (Easiest — No Node.js Required)
+1. Go to the [**Releases**](https://github.com/de4d5y/sxm-widget/releases) page on GitHub.
+2. Download `SiriusXM-Widget-1.0.0-Portable.exe`.
+3. Double-click it to run — no installation or extra software required.
+   *(If Windows SmartScreen shows a warning on first launch, click **More info → Run anyway**.)*
+
+### Option 2: Run or Build from Source
+**Prerequisites:** Windows 10 / 11 and **Node.js (LTS)** from [nodejs.org](https://nodejs.org/) (includes `npm`).
+
 1. **Get the code** — either:
    - Click **Code → Download ZIP** on GitHub and extract the folder anywhere on your PC, **or**
    - Clone with Git:
@@ -35,11 +40,15 @@ A lightweight Windows desktop radio widget for SiriusXM built with Electron.
      cd sxm-widget
      ```
 2. **Open a terminal in the project folder** (e.g., open the `sxm-widget` folder in File Explorer, click the address bar, type `powershell`, and press Enter).
-3. **Install dependencies** (this downloads Electron and everything the app needs — takes ~1 minute the first time):
+3. **Install dependencies** (takes ~1 minute the first time):
    ```bash
    npm install
    ```
    *(If `npm` isn't recognized right after installing Node.js, close and reopen your terminal and try again.)*
+4. **Run** with `npm start` (or double-click `launch_widget.bat`), or **build your own portable `.exe`** into `dist/` with:
+   ```bash
+   npm run build
+   ```
 
 ## Usage
 Start the widget using either method:
