@@ -463,7 +463,7 @@
       overflow-y: auto;
       display: none;
       flex-direction: column;
-      gap: 9px;
+      gap: 6px;
       box-shadow: 0 14px 34px rgba(0, 0, 0, 0.75);
       backdrop-filter: blur(16px);
       -webkit-app-region: no-drag;
@@ -489,7 +489,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 6px;
       flex-wrap: wrap;
     }
 
@@ -530,17 +530,18 @@
       justify-content: center;
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 8px 10px;
-      border-radius: 9px;
+      gap: 5px;
+      padding: 6px 8px;
+      border-radius: 8px;
       background: rgba(255, 255, 255, 0.07);
       border: 1px solid rgba(255, 255, 255, 0.12);
       color: #f8fafc;
-      font-size: 12.5px;
+      font-size: 12px;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.15s ease;
       -webkit-app-region: no-drag;
+      white-space: nowrap;
     }
 
     .theme-chip:hover {
@@ -552,6 +553,225 @@
       border-color: var(--fav-gold);
       background: rgba(251, 191, 36, 0.18);
       color: #fff;
+    }
+
+    .popover-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.1);
+      margin: 2px 0;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 2px 2px 0 2px;
+    }
+
+    .setting-label {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 38px;
+      height: 20px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      padding: 0;
+      flex-shrink: 0;
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.2s ease;
+    }
+
+    .toggle-switch.on {
+      background: var(--live-green);
+      border-color: var(--live-green);
+    }
+
+    .toggle-switch.on::after {
+      transform: translateX(18px);
+    }
+
+    /* Track History Popover */
+    .history-popover {
+      position: absolute;
+      top: 44px;
+      left: 16px;
+      right: 16px;
+      z-index: 50;
+      background: rgba(12, 16, 24, 0.98);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 14px;
+      padding: 10px 14px;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(16px);
+      -webkit-app-region: no-drag;
+    }
+
+    .history-popover * {
+      -webkit-app-region: no-drag;
+    }
+
+    .history-popover.open {
+      display: flex;
+    }
+
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .history-clear-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-secondary);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .history-clear-btn:hover {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 104px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    body.drawer-open .history-list {
+      max-height: 360px;
+    }
+
+    .history-list::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .history-list::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 999px;
+    }
+
+    .history-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 5px 8px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .history-row:hover {
+      background: rgba(255, 255, 255, 0.09);
+    }
+
+    .history-info {
+      min-width: 0;
+      flex: 1;
+      display: flex;
+      align-items: baseline;
+      gap: 7px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .history-ch {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 5px;
+      background: var(--badge-bg);
+      color: var(--badge-text);
+      border: 1px solid var(--badge-border);
+      flex-shrink: 0;
+    }
+
+    .history-track {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .history-artist {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-shrink: 1;
+    }
+
+    .history-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .history-time {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .history-copy-btn {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-secondary);
+      border-radius: 6px;
+      padding: 2px 7px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .history-copy-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+      color: #fff;
+    }
+
+    .history-empty {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      text-align: center;
+      padding: 14px 8px;
     }
 
     /* Main Player Deck (156px height) */
@@ -718,6 +938,26 @@
       text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
     }
 
+    .track-title-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .mini-ch-pill {
+      display: none;
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: var(--badge-bg);
+      color: var(--badge-text);
+      border: 1px solid var(--badge-border);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
     .track-title {
       font-size: 23px;
       font-weight: 800;
@@ -738,6 +978,16 @@
       text-overflow: ellipsis;
     }
 
+    /* Controls Column (Transport + Volume) */
+    .controls-column {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+      flex-shrink: 0;
+      -webkit-app-region: no-drag;
+    }
+
     /* Transport Controls */
     .controls-cluster {
       display: flex;
@@ -745,6 +995,218 @@
       gap: 9px;
       flex-shrink: 0;
       -webkit-app-region: no-drag;
+    }
+
+    /* Volume Bar */
+    .volume-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 4px 10px;
+      border-radius: 12px;
+      background: var(--bg-card);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transition: background 0.2s ease, border-color 0.2s ease;
+      -webkit-app-region: no-drag;
+    }
+
+    .volume-bar:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-glass);
+    }
+
+    .mute-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .mute-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+    }
+
+    .mute-btn.muted {
+      color: #f87171;
+    }
+
+    .mute-btn svg {
+      width: 17px;
+      height: 17px;
+      fill: currentColor;
+    }
+
+    .volume-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      flex: 1;
+      height: 5px;
+      border-radius: 999px;
+      background: var(--badge-bg);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: var(--text-primary);
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 8px var(--accent-glow);
+      cursor: pointer;
+      transition: transform 0.12s ease;
+    }
+
+    .volume-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.18);
+    }
+
+    .volume-pct {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-secondary);
+      min-width: 32px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .mini-only-actions {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      margin-left: 2px;
+      -webkit-app-region: no-drag;
+    }
+
+    /* Mini Bar Mode Overrides */
+    body.mini-mode .widget-shell {
+      border-radius: 16px;
+    }
+
+    body.mini-mode .top-bar,
+    body.mini-mode .christmas-lights,
+    body.mini-mode .channel-drawer,
+    body.mini-mode .theme-popover,
+    body.mini-mode .history-popover {
+      display: none !important;
+    }
+
+    body.mini-mode .player-deck {
+      height: 68px;
+      padding: 0 14px;
+      gap: 12px;
+      -webkit-app-region: drag;
+    }
+
+    body.mini-mode .art-wrapper {
+      width: 44px;
+      height: 44px;
+      border-radius: 11px;
+      border-width: 1.5px;
+    }
+
+    body.mini-mode .art-ch-num {
+      font-size: 16px;
+    }
+
+    body.mini-mode .art-ch-label {
+      display: none;
+    }
+
+    body.mini-mode .eq-bars {
+      bottom: 3px;
+      right: 3px;
+      height: 12px;
+      padding: 2px 3px;
+      gap: 2px;
+    }
+
+    body.mini-mode .eq-bar {
+      width: 2.5px;
+    }
+
+    body.mini-mode .now-playing {
+      gap: 2px;
+    }
+
+    body.mini-mode .channel-row {
+      display: none;
+    }
+
+    body.mini-mode .mini-ch-pill {
+      display: inline-block;
+    }
+
+    body.mini-mode .track-title {
+      font-size: 15px;
+    }
+
+    body.mini-mode .track-artist {
+      font-size: 12px;
+    }
+
+    body.mini-mode .controls-column {
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+    }
+
+    body.mini-mode .controls-cluster {
+      gap: 5px;
+    }
+
+    body.mini-mode .ctrl-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+    }
+
+    body.mini-mode .ctrl-btn svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    body.mini-mode .ctrl-btn.play-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+    }
+
+    body.mini-mode .ctrl-btn.play-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    body.mini-mode .ctrl-btn.stop-btn,
+    body.mini-mode .ctrl-btn.drawer-toggle {
+      display: none;
+    }
+
+    body.mini-mode .volume-bar {
+      width: 104px;
+      padding: 3px 7px;
+      gap: 5px;
+    }
+
+    body.mini-mode .volume-pct {
+      display: none;
+    }
+
+    body.mini-mode .mini-only-actions {
+      display: flex;
     }
 
     .ctrl-btn {
@@ -1103,15 +1565,17 @@
       </div>
       <div class="top-actions">
         <button class="go-live-pill" id="topGoLiveBtn" title="Jump to Live Broadcast Playback">● LIVE</button>
-        <button class="mini-btn" id="themeBtn" title="Change Widget Theme">🎨</button>
+        <button class="mini-btn" id="themeBtn" title="Themes & Startup">🎨</button>
+        <button class="mini-btn" id="historyBtn" title="Recent Track History (Last 12)">🕒</button>
         <button class="mini-btn" id="favCycleBtn" title="Cycle All Channels vs. Favorites Only (Prev/Next)">★</button>
         <button class="mini-btn" id="loginBtn" title="Show/Hide SiriusXM Web Player (Sign In)">🌐</button>
+        <button class="mini-btn" id="miniModeBtn" title="Mini Bar Mode">▬</button>
         <button class="mini-btn active" id="pinBtn" title="Toggle Always-on-Top">📌</button>
         <button class="mini-btn close-btn" id="closeBtn" title="Close Widget">✕</button>
       </div>
     </div>
 
-    <!-- Theme Picker Popover -->
+    <!-- Theme Picker & Settings Popover -->
     <div class="theme-popover" id="themePopover">
       <div class="theme-popover-title">Select Widget Theme</div>
       <div class="visual-settings">
@@ -1130,6 +1594,22 @@
         <button class="theme-chip" data-theme="midnight">🌌 Midnight</button>
         <button class="theme-chip" data-theme="synthwave">🌆 Synthwave</button>
         <button class="theme-chip" data-theme="nyquil">🧪 NyQuil</button>
+      </div>
+      <div class="popover-divider"></div>
+      <div class="setting-row">
+        <span class="setting-label">🚀 Launch with Windows</span>
+        <button class="toggle-switch" id="startupToggle" role="switch" aria-checked="false" title="Start SiriusXM Widget automatically when Windows starts"></button>
+      </div>
+    </div>
+
+    <!-- Recent Track History Popover -->
+    <div class="history-popover" id="historyPopover">
+      <div class="history-header">
+        <div class="theme-popover-title" id="historyTitle">Recent Tracks (0/12)</div>
+        <button class="history-clear-btn" id="clearHistoryBtn" title="Clear Track History">Clear</button>
+      </div>
+      <div class="history-list" id="historyList">
+        <div class="history-empty">No tracks logged yet.</div>
       </div>
     </div>
 
@@ -1154,30 +1634,48 @@
           <span class="ch-name" id="chName">Holiday Traditions</span>
           <button class="fav-star-btn" id="currentFavBtn" title="Favorite this channel">★</button>
         </div>
-        <div class="track-title" id="trackTitle">Ready to Stream</div>
+        <div class="track-title-row">
+          <span class="mini-ch-pill" id="miniChPill">CH 71</span>
+          <div class="track-title" id="trackTitle">Ready to Stream</div>
+        </div>
         <div class="track-artist" id="trackArtist">Click Play or select a channel</div>
       </div>
 
-      <div class="controls-cluster">
-        <button class="ctrl-btn" id="prevBtn" title="Previous Channel">
-          <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-        </button>
+      <div class="controls-column">
+        <div class="controls-cluster">
+          <button class="ctrl-btn" id="prevBtn" title="Previous Channel">
+            <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+          </button>
 
-        <button class="ctrl-btn play-btn" id="playBtn" title="Play / Pause">
-          <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        </button>
+          <button class="ctrl-btn play-btn" id="playBtn" title="Play / Pause">
+            <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
 
-        <button class="ctrl-btn stop-btn" id="stopBtn" title="Stop Stream">
-          <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
-        </button>
+          <button class="ctrl-btn stop-btn" id="stopBtn" title="Stop Stream">
+            <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+          </button>
 
-        <button class="ctrl-btn" id="nextBtn" title="Next Channel">
-          <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
-        </button>
+          <button class="ctrl-btn" id="nextBtn" title="Next Channel">
+            <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+          </button>
 
-        <button class="ctrl-btn drawer-toggle" id="drawerBtn" title="Browse Channels & Favorites">
-          <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
-        </button>
+          <button class="ctrl-btn drawer-toggle" id="drawerBtn" title="Browse Channels & Favorites">
+            <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+          </button>
+        </div>
+
+        <div class="volume-bar" id="volumeBar" title="Volume (scroll wheel to adjust)">
+          <button class="mute-btn" id="muteBtn" title="Mute / Unmute">
+            <svg id="muteIcon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+          </button>
+          <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="100" />
+          <span class="volume-pct" id="volumePct">100%</span>
+        </div>
+
+        <div class="mini-only-actions">
+          <button class="mini-btn" id="expandFromMiniBtn" title="Expand to Full Widget">⤢</button>
+          <button class="mini-btn close-btn" id="miniCloseBtn" title="Close Widget">✕</button>
+        </div>
       </div>
     </div>
 
@@ -1233,13 +1731,18 @@
       currentChannel: null,
       isPlaying: false,
       drawerOpen: false,
+      miniMode: false,
       activeFilter: 'all',
       searchQuery: '',
       cycleFavoritesOnly: false,
       alwaysOnTop: true,
       theme: 'christmas',
       opacity: 1,
-      musicReactiveLights: true
+      musicReactiveLights: true,
+      volume: 100,
+      isMuted: false,
+      trackHistory: [],
+      launchAtStartup: false
     };
 
     const els = {
@@ -1254,8 +1757,17 @@
       opacitySlider: document.getElementById('opacitySlider'),
       opacityValue: document.getElementById('opacityValue'),
       musicReactiveToggle: document.getElementById('musicReactiveToggle'),
+      startupToggle: document.getElementById('startupToggle'),
+      historyBtn: document.getElementById('historyBtn'),
+      historyPopover: document.getElementById('historyPopover'),
+      historyTitle: document.getElementById('historyTitle'),
+      historyList: document.getElementById('historyList'),
+      clearHistoryBtn: document.getElementById('clearHistoryBtn'),
       favCycleBtn: document.getElementById('favCycleBtn'),
       loginBtn: document.getElementById('loginBtn'),
+      miniModeBtn: document.getElementById('miniModeBtn'),
+      expandFromMiniBtn: document.getElementById('expandFromMiniBtn'),
+      miniCloseBtn: document.getElementById('miniCloseBtn'),
       pinBtn: document.getElementById('pinBtn'),
       closeBtn: document.getElementById('closeBtn'),
       artWrapper: document.getElementById('artWrapper'),
@@ -1264,6 +1776,7 @@
       artChNum: document.getElementById('artChNum'),
       eqBars: document.getElementById('eqBars'),
       chBadge: document.getElementById('chBadge'),
+      miniChPill: document.getElementById('miniChPill'),
       chName: document.getElementById('chName'),
       currentFavBtn: document.getElementById('currentFavBtn'),
       trackTitle: document.getElementById('trackTitle'),
@@ -1274,6 +1787,11 @@
       stopBtn: document.getElementById('stopBtn'),
       nextBtn: document.getElementById('nextBtn'),
       drawerBtn: document.getElementById('drawerBtn'),
+      volumeBar: document.getElementById('volumeBar'),
+      muteBtn: document.getElementById('muteBtn'),
+      muteIcon: document.getElementById('muteIcon'),
+      volumeSlider: document.getElementById('volumeSlider'),
+      volumePct: document.getElementById('volumePct'),
       searchInput: document.getElementById('searchInput'),
       jumpLiveBtn: document.getElementById('jumpLiveBtn'),
       filterTabs: document.getElementById('filterTabs'),
@@ -1365,6 +1883,108 @@
         musicFrame = requestAnimationFrame(sample);
       };
       musicFrame = requestAnimationFrame(sample);
+    }
+
+    function applyVolumeUI() {
+      const effectiveVol = state.isMuted ? 0 : state.volume;
+      els.volumeSlider.value = String(state.volume);
+      els.volumeSlider.style.background = `linear-gradient(to right, var(--accent) 0%, var(--accent) ${effectiveVol}%, var(--badge-bg) ${effectiveVol}%, var(--badge-bg) 100%)`;
+      els.volumePct.textContent = state.isMuted ? 'MUTE' : `${state.volume}%`;
+      els.muteBtn.classList.toggle('muted', state.isMuted || state.volume === 0);
+
+      if (state.isMuted || state.volume === 0) {
+        els.muteIcon.innerHTML = '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>';
+      } else if (state.volume < 50) {
+        els.muteIcon.innerHTML = '<path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z"/>';
+      } else {
+        els.muteIcon.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
+      }
+
+      if (els.directAudio) {
+        els.directAudio.volume = Math.max(0, Math.min(1, state.volume / 100));
+        els.directAudio.muted = !!state.isMuted;
+      }
+    }
+
+    let volumeIpcTimer = null;
+    function updateVolume(newVol, newMuted, immediate = false) {
+      state.volume = Math.max(0, Math.min(100, Math.round(newVol)));
+      state.isMuted = !!newMuted;
+      applyVolumeUI();
+      if (volumeIpcTimer) clearTimeout(volumeIpcTimer);
+      if (immediate) {
+        window.sxmApi.setVolume(state.volume, state.isMuted);
+      } else {
+        volumeIpcTimer = setTimeout(() => {
+          window.sxmApi.setVolume(state.volume, state.isMuted);
+        }, 60);
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function formatRelativeTime(ts) {
+      if (!ts) return '';
+      const diffSec = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+      if (diffSec < 60) return 'now';
+      const diffMin = Math.floor(diffSec / 60);
+      if (diffMin < 60) return `${diffMin}m ago`;
+      const diffHr = Math.floor(diffMin / 60);
+      if (diffHr < 24) return `${diffHr}h ago`;
+      return `${Math.floor(diffHr / 24)}d ago`;
+    }
+
+    function renderTrackHistory() {
+      const items = state.trackHistory || [];
+      els.historyTitle.textContent = `Recent Tracks (${items.length}/12)`;
+      if (items.length === 0) {
+        els.historyList.innerHTML = '<div class="history-empty">No tracks logged yet. Play a channel to start tracking!</div>';
+        return;
+      }
+      els.historyList.innerHTML = items.map((item, idx) => {
+        const chLabel = item.channelNumber ? `CH ${item.channelNumber}` : (item.channelName || 'SXM');
+        const artistPart = item.artist ? `<span class="history-artist">— ${escapeHtml(item.artist)}</span>` : '';
+        return `
+          <div class="history-row">
+            <div class="history-info" title="${escapeHtml(item.title)}${item.artist ? ' — ' + escapeHtml(item.artist) : ''}">
+              <span class="history-ch">${escapeHtml(chLabel)}</span>
+              <span class="history-track">${escapeHtml(item.title)}</span>
+              ${artistPart}
+            </div>
+            <div class="history-meta">
+              <span class="history-time">${formatRelativeTime(item.timestamp)}</span>
+              <button class="history-copy-btn" data-idx="${idx}" title="Copy Track Info">Copy</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function applyMiniModeUI(isMini) {
+      state.miniMode = !!isMini;
+      document.body.classList.toggle('mini-mode', state.miniMode);
+      els.miniModeBtn.classList.toggle('active', state.miniMode);
+      if (state.miniMode) {
+        state.drawerOpen = false;
+        document.body.classList.remove('drawer-open');
+        els.drawerBtn.classList.remove('open');
+        els.themePopover.classList.remove('open');
+        els.themeBtn.classList.remove('active');
+        els.historyPopover.classList.remove('open');
+        els.historyBtn.classList.remove('active');
+      }
+    }
+
+    function applyStartupToggleUI(enabled) {
+      state.launchAtStartup = !!enabled;
+      els.startupToggle.classList.toggle('on', state.launchAtStartup);
+      els.startupToggle.setAttribute('aria-checked', String(state.launchAtStartup));
     }
 
     function playOrStopDirectStream(ch, shouldPlay) {
@@ -1502,9 +2122,11 @@
       else stopMusicAnalysis();
     }
 
-    // Theme Picker Events
+    // Theme & Settings Popover Events
     els.themeBtn.addEventListener('click', (e) => {
       e.stopPropagation();
+      els.historyPopover.classList.remove('open');
+      els.historyBtn.classList.remove('active');
       els.themePopover.classList.toggle('open');
       els.themeBtn.classList.toggle('active', els.themePopover.classList.contains('open'));
     });
@@ -1550,10 +2172,82 @@
       saveVisualSettings();
     });
 
+    els.startupToggle.addEventListener('click', async () => {
+      const next = !state.launchAtStartup;
+      const applied = await window.sxmApi.setLaunchAtStartup(next);
+      applyStartupToggleUI(applied);
+    });
+
+    // Track History Popover Events
+    els.historyBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      els.themePopover.classList.remove('open');
+      els.themeBtn.classList.remove('active');
+      const willOpen = !els.historyPopover.classList.contains('open');
+      if (willOpen) renderTrackHistory();
+      els.historyPopover.classList.toggle('open', willOpen);
+      els.historyBtn.classList.toggle('active', willOpen);
+    });
+
+    els.clearHistoryBtn.addEventListener('click', async () => {
+      state.trackHistory = await window.sxmApi.clearHistory();
+      renderTrackHistory();
+    });
+
+    els.historyList.addEventListener('click', async (e) => {
+      const copyBtn = e.target.closest('.history-copy-btn');
+      if (!copyBtn) return;
+      const idx = Number(copyBtn.dataset.idx);
+      const item = state.trackHistory[idx];
+      if (!item) return;
+      const text = item.artist ? `${item.artist} - ${item.title}` : item.title;
+      try {
+        await navigator.clipboard.writeText(text);
+        copyBtn.textContent = '✓';
+        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1200);
+      } catch (err) {}
+    });
+
+    // Volume & Mute Events
+    els.volumeSlider.addEventListener('input', (e) => {
+      const val = Number(e.target.value);
+      updateVolume(val, val === 0 ? true : false, false);
+    });
+
+    els.muteBtn.addEventListener('click', () => {
+      if (state.isMuted) {
+        const restoreVol = state.volume === 0 ? 50 : state.volume;
+        updateVolume(restoreVol, false, true);
+      } else {
+        updateVolume(state.volume, true, true);
+      }
+    });
+
+    els.volumeBar.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 5 : -5;
+      const nextVol = Math.max(0, Math.min(100, state.volume + delta));
+      updateVolume(nextVol, nextVol === 0, false);
+    }, { passive: false });
+
+    // Mini Bar Mode Events
+    async function setMiniMode(enable) {
+      const applied = await window.sxmApi.setMiniMode(enable);
+      applyMiniModeUI(applied);
+    }
+
+    els.miniModeBtn.addEventListener('click', () => setMiniMode(!state.miniMode));
+    els.expandFromMiniBtn.addEventListener('click', () => setMiniMode(false));
+    els.miniCloseBtn.addEventListener('click', () => window.sxmApi.closeApp());
+
     document.addEventListener('click', (e) => {
       if (!els.themePopover.contains(e.target) && e.target !== els.themeBtn) {
         els.themePopover.classList.remove('open');
         els.themeBtn.classList.remove('active');
+      }
+      if (!els.historyPopover.contains(e.target) && e.target !== els.historyBtn) {
+        els.historyPopover.classList.remove('open');
+        els.historyBtn.classList.remove('active');
       }
     });
 
@@ -1573,7 +2267,9 @@
     function updateCurrentChannelUI(ch) {
       if (!ch) return;
       state.currentChannel = ch;
-      els.chBadge.textContent = ch.isDirectStream ? `📻 ${ch.number}` : `CH ${ch.number}`;
+      const badgeLabel = ch.isDirectStream ? `📻 ${ch.number}` : `CH ${ch.number}`;
+      els.chBadge.textContent = badgeLabel;
+      els.miniChPill.textContent = badgeLabel;
       els.chName.textContent = ch.name;
       els.artChNum.textContent = ch.number;
 
@@ -1690,7 +2386,11 @@
 
     // Toggle Drawer
     async function toggleDrawer() {
+      if (state.miniMode) {
+        applyMiniModeUI(false);
+      }
       state.drawerOpen = !state.drawerOpen;
+      document.body.classList.toggle('drawer-open', state.drawerOpen);
       els.drawerBtn.classList.toggle('open', state.drawerOpen);
       await window.sxmApi.setDrawerOpen(state.drawerOpen);
     }
@@ -1833,6 +2533,14 @@
       }
     });
 
+    // Track History updates from Electron main process
+    window.sxmApi.onHistoryUpdate((history) => {
+      state.trackHistory = Array.isArray(history) ? history : [];
+      if (els.historyPopover.classList.contains('open')) {
+        renderTrackHistory();
+      }
+    });
+
     // Initialize on load
     window.addEventListener('DOMContentLoaded', async () => {
       initSnowfall();
@@ -1843,8 +2551,15 @@
       state.opacity = typeof init.widget_opacity === 'number' ? init.widget_opacity : 1;
       state.musicReactiveLights = init.music_reactive_lights !== false;
       renderVisualSettings();
+      state.volume = typeof init.volume === 'number' ? init.volume : 100;
+      state.isMuted = !!init.is_muted;
+      state.trackHistory = Array.isArray(init.track_history) ? init.track_history : [];
       applyTheme(init.theme || 'christmas');
+      applyVolumeUI();
+      applyMiniModeUI(!!init.mini_mode);
+      applyStartupToggleUI(!!init.launch_at_startup);
       updateCurrentChannelUI(state.currentChannel);
+      renderTrackHistory();
     });
   </script>
 </body>

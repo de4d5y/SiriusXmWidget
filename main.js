@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { DEFAULT_CHANNELS } = require('./channels');
@@ -13,13 +13,20 @@ const DATA_FILE = app.isPackaged
   ? path.join(app.getPath('userData'), 'user_data.json')
   : path.join(__dirname, 'user_data.json');
 const WIDGET_WIDTH = 720;
+const MINI_HEIGHT = 68;
 const COMPACT_HEIGHT = 200;
 const EXPANDED_HEIGHT = 760;
+const MAX_TRACK_HISTORY = 12;
 
 let widgetWin = null;
 let playerWin = null;
 let alwaysOnTop = true;
 let isPlaying = false;
+let isMiniMode = false;
+let currentVolume = 100;
+let isMuted = false;
+let savedWindowPos = null;
+let trackHistory = [];
 let channels = [...FREE_HOLIDAY_CHANNELS, ...DEFAULT_CHANNELS];
 let favorites = ['2', '8', '34', '36', '51', '71', 'W1', 'W2'];
 let currentChannel = channels.find(c => String(c.number) === '71') || channels[0];
@@ -27,6 +34,110 @@ let currentTheme = 'christmas';
 let widgetOpacity = 1;
 let musicReactiveLights = true;
 let isTuningUntil = 0;
+
+function getStartupLoginOptions() {
+  if (app.isPackaged) {
+    const exePath = process.env.PORTABLE_EXECUTABLE_FILE || process.execPath;
+    return { path: exePath };
+  }
+  return {
+    path: process.execPath,
+    args: [path.resolve(__dirname)]
+  };
+}
+
+function getLaunchAtStartup() {
+  try {
+    const opts = getStartupLoginOptions();
+    return !!app.getLoginItemSettings(opts).openAtLogin;
+  } catch (e) {
+    return false;
+  }
+}
+
+function setLaunchAtStartup(enabled) {
+  try {
+    const opts = getStartupLoginOptions();
+    app.setLoginItemSettings({
+      openAtLogin: !!enabled,
+      ...opts
+    });
+    return getLaunchAtStartup();
+  } catch (e) {
+    console.error('Failed to update startup setting:', e);
+    return false;
+  }
+}
+
+function getSafeWindowPosition(pos, width, height) {
+  if (!pos || typeof pos.x !== 'number' || typeof pos.y !== 'number') return null;
+  try {
+    const displays = screen.getAllDisplays();
+    const visible = displays.some(d => {
+      const wa = d.workArea;
+      const overlapX = Math.min(pos.x + width, wa.x + wa.width) - Math.max(pos.x, wa.x);
+      const overlapY = Math.min(pos.y + height, wa.y + wa.height) - Math.max(pos.y, wa.y);
+      return overlapX >= 80 && overlapY >= 40;
+    });
+    return visible ? { x: Math.round(pos.x), y: Math.round(pos.y) } : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function recordTrackHistory(title, artist, channel) {
+  const cleanTitle = (title || '').trim();
+  const cleanArtist = (artist || '').trim();
+  if (!cleanTitle) return;
+  const ignoredTitles = ['ready to stream', 'stream stopped', 'loading...', 'siriusxm'];
+  if (ignoredTitles.includes(cleanTitle.toLowerCase())) return;
+
+  const chName = channel ? channel.name : '';
+  const chNum = channel ? String(channel.number) : '';
+  const latest = trackHistory[0];
+  if (
+    latest &&
+    latest.title.toLowerCase() === cleanTitle.toLowerCase() &&
+    latest.artist.toLowerCase() === cleanArtist.toLowerCase()
+  ) {
+    return;
+  }
+
+  trackHistory.unshift({
+    title: cleanTitle,
+    artist: cleanArtist,
+    channelName: chName,
+    channelNumber: chNum,
+    timestamp: Date.now()
+  });
+
+  if (trackHistory.length > MAX_TRACK_HISTORY) {
+    trackHistory = trackHistory.slice(0, MAX_TRACK_HISTORY);
+  }
+  saveUserData();
+  if (widgetWin && !widgetWin.isDestroyed()) {
+    widgetWin.webContents.send('history_update', trackHistory);
+  }
+}
+
+async function applySxmAudioSettings() {
+  if (!playerWin || playerWin.isDestroyed()) return;
+  try {
+    playerWin.webContents.setAudioMuted(!!isMuted);
+    const volFraction = Math.max(0, Math.min(1, currentVolume / 100));
+    await playerWin.webContents.executeJavaScript(`
+      (function() {
+        const mediaEls = document.querySelectorAll('audio, video');
+        mediaEls.forEach(m => {
+          if (Math.abs(m.volume - ${volFraction}) > 0.01) {
+            m.volume = ${volFraction};
+          }
+          m.muted = ${!!isMuted};
+        });
+      })();
+    `);
+  } catch (e) {}
+}
 
 function loadUserData() {
   if (fs.existsSync(DATA_FILE)) {
@@ -43,6 +154,21 @@ function loadUserData() {
       }
       if (typeof data.music_reactive_lights === 'boolean') {
         musicReactiveLights = data.music_reactive_lights;
+      }
+      if (typeof data.volume === 'number' && !Number.isNaN(data.volume)) {
+        currentVolume = Math.max(0, Math.min(100, Math.round(data.volume)));
+      }
+      if (typeof data.is_muted === 'boolean') {
+        isMuted = data.is_muted;
+      }
+      if (typeof data.mini_mode === 'boolean') {
+        isMiniMode = data.mini_mode;
+      }
+      if (data.window_pos && typeof data.window_pos.x === 'number' && typeof data.window_pos.y === 'number') {
+        savedWindowPos = { x: data.window_pos.x, y: data.window_pos.y };
+      }
+      if (Array.isArray(data.track_history)) {
+        trackHistory = data.track_history.slice(0, MAX_TRACK_HISTORY);
       }
       if (Array.isArray(data.custom_channels)) {
         const existingNums = new Set(channels.map(c => String(c.number)));
@@ -75,6 +201,11 @@ function saveUserData() {
       widget_opacity: widgetOpacity,
       music_reactive_lights: musicReactiveLights,
       last_channel: currentChannel ? String(currentChannel.number) : '71',
+      volume: currentVolume,
+      is_muted: isMuted,
+      mini_mode: isMiniMode,
+      window_pos: savedWindowPos,
+      track_history: trackHistory,
       custom_channels: customChannels
     };
     fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
@@ -287,10 +418,12 @@ async function tuneSxmPlayer(channel) {
       if (status && status.state === 'clicked_hero') {
         clickedHeroOnce = true;
         isPlaying = true;
+        applySxmAudioSettings();
       } else if (status && (status.state === 'playing_verified' || status.state === 'triggered_play_btn' || status.state === 'triggered_media_play')) {
         clearInterval(pendingTuneTimer);
         pendingTuneTimer = null;
         isPlaying = true;
+        applySxmAudioSettings();
       }
     } catch (e) {
       // Page is still mid-navigation; next interval tick will retry cleanly
@@ -364,6 +497,9 @@ function startMetadataPoller() {
     if (currentChannel && currentChannel.isDirectStream) {
       const freeMeta = await fetchFreeRadioMetadata(currentChannel);
       if (freeMeta) {
+        if (isPlaying && freeMeta.title) {
+          recordTrackHistory(freeMeta.title, freeMeta.artist, currentChannel);
+        }
         widgetWin.webContents.send('metadata_update', {
           title: freeMeta.title,
           artist: freeMeta.artist,
@@ -487,6 +623,13 @@ function startMetadataPoller() {
           }
         }
 
+        // Keep SiriusXM player volume/mute synced with widget controls
+        applySxmAudioSettings();
+
+        if (meta.title && (meta.is_playing !== false)) {
+          recordTrackHistory(meta.title, meta.artist, currentChannel);
+        }
+
         widgetWin.webContents.send('metadata_update', meta);
       }
     } catch (e) {
@@ -498,10 +641,13 @@ function startMetadataPoller() {
 function createWindows() {
   loadUserData();
   const iconPath = path.join(__dirname, 'icon.ico');
+  const initialHeight = isMiniMode ? MINI_HEIGHT : COMPACT_HEIGHT;
+  const safePos = getSafeWindowPosition(savedWindowPos, WIDGET_WIDTH, initialHeight);
 
   widgetWin = new BrowserWindow({
     width: WIDGET_WIDTH,
-    height: COMPACT_HEIGHT,
+    height: initialHeight,
+    ...(safePos ? { x: safePos.x, y: safePos.y } : {}),
     frame: false,
     transparent: true,
     resizable: false,
@@ -518,6 +664,18 @@ function createWindows() {
 
   widgetWin.loadFile(path.join(__dirname, 'ui.html'));
   widgetWin.setOpacity(widgetOpacity);
+
+  let savePosTimer = null;
+  widgetWin.on('move', () => {
+    if (!widgetWin || widgetWin.isDestroyed()) return;
+    if (savePosTimer) clearTimeout(savePosTimer);
+    savePosTimer = setTimeout(() => {
+      if (!widgetWin || widgetWin.isDestroyed()) return;
+      const b = widgetWin.getBounds();
+      savedWindowPos = { x: b.x, y: b.y };
+      saveUserData();
+    }, 300);
+  });
 
   widgetWin.on('closed', () => {
     app.quit();
@@ -538,6 +696,8 @@ function createWindows() {
       contextIsolation: true
     }
   });
+
+  playerWin.webContents.setAudioMuted(!!isMuted);
 
   const cleanUA = playerWin.webContents.getUserAgent().replace(/Electron\/[0-9.]+\s?/g, '');
   playerWin.webContents.setUserAgent(cleanUA);
@@ -563,7 +723,12 @@ ipcMain.handle('get_initial_state', () => {
     is_playing: isPlaying,
     theme: currentTheme,
     widget_opacity: widgetOpacity,
-    music_reactive_lights: musicReactiveLights
+    music_reactive_lights: musicReactiveLights,
+    volume: currentVolume,
+    is_muted: isMuted,
+    mini_mode: isMiniMode,
+    track_history: trackHistory,
+    launch_at_startup: getLaunchAtStartup()
   };
 });
 
@@ -596,9 +761,50 @@ ipcMain.handle('preview_widget_opacity', (_event, opacity) => {
   return widgetOpacity;
 });
 
+ipcMain.handle('set_volume', async (_event, volume, muted) => {
+  if (typeof volume === 'number' && !Number.isNaN(volume)) {
+    currentVolume = Math.max(0, Math.min(100, Math.round(volume)));
+  }
+  if (typeof muted === 'boolean') {
+    isMuted = muted;
+  }
+  saveUserData();
+  await applySxmAudioSettings();
+  return { volume: currentVolume, is_muted: isMuted };
+});
+
+ipcMain.handle('set_mini_mode', (_event, mini) => {
+  isMiniMode = !!mini;
+  saveUserData();
+  if (!widgetWin || widgetWin.isDestroyed()) return isMiniMode;
+  const targetH = isMiniMode ? MINI_HEIGHT : COMPACT_HEIGHT;
+  const bounds = widgetWin.getBounds();
+  widgetWin.setBounds({
+    x: bounds.x,
+    y: bounds.y,
+    width: WIDGET_WIDTH,
+    height: targetH
+  }, true);
+  return isMiniMode;
+});
+
+ipcMain.handle('clear_history', () => {
+  trackHistory = [];
+  saveUserData();
+  return trackHistory;
+});
+
+ipcMain.handle('set_launch_at_startup', (_event, enabled) => {
+  return setLaunchAtStartup(!!enabled);
+});
+
 ipcMain.handle('set_drawer_open', (_event, isOpen) => {
   if (!widgetWin || widgetWin.isDestroyed()) return false;
-  const targetH = isOpen ? EXPANDED_HEIGHT : COMPACT_HEIGHT;
+  if (isOpen && isMiniMode) {
+    isMiniMode = false;
+    saveUserData();
+  }
+  const targetH = isOpen ? EXPANDED_HEIGHT : (isMiniMode ? MINI_HEIGHT : COMPACT_HEIGHT);
   const bounds = widgetWin.getBounds();
   widgetWin.setBounds({
     x: bounds.x,
