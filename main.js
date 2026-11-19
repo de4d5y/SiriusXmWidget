@@ -589,6 +589,13 @@ ipcMain.handle('save_visual_settings', (_event, settings) => {
   return { opacity: widgetOpacity, musicReactiveLights };
 });
 
+ipcMain.handle('preview_widget_opacity', (_event, opacity) => {
+  if (typeof opacity !== 'number' || !Number.isFinite(opacity)) return widgetOpacity;
+  widgetOpacity = Math.max(0.35, Math.min(1, opacity));
+  if (widgetWin && !widgetWin.isDestroyed()) widgetWin.setOpacity(widgetOpacity);
+  return widgetOpacity;
+});
+
 ipcMain.handle('set_drawer_open', (_event, isOpen) => {
   if (!widgetWin || widgetWin.isDestroyed()) return false;
   const targetH = isOpen ? EXPANDED_HEIGHT : COMPACT_HEIGHT;

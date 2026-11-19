@@ -1115,7 +1115,7 @@
     <div class="theme-popover" id="themePopover">
       <div class="theme-popover-title">Select Widget Theme</div>
       <div class="visual-settings">
-        <label for="opacitySlider">Transparency <span id="opacityValue">100%</span></label>
+        <label for="opacitySlider">Opacity <span id="opacityValue">100%</span></label>
         <input class="opacity-slider" id="opacitySlider" type="range" min="35" max="100" value="100" aria-label="Widget opacity" />
         <label for="musicReactiveToggle" title="Uses real audio energy from Free Holiday Radio streams. SiriusXM web-player audio is isolated from this widget.">Music-reactive Christmas lights</label>
         <input class="reactive-toggle" id="musicReactiveToggle" type="checkbox" checked aria-label="Enable music-reactive Christmas lights" />
@@ -1293,18 +1293,22 @@
     let energyAverage = 0;
     let lastBeatAt = 0;
     let lastQuietAt = 0;
+    let musicHitTimer = null;
 
     function stopMusicAnalysis() {
       if (musicFrame) cancelAnimationFrame(musicFrame);
       musicFrame = null;
+      if (musicHitTimer) clearTimeout(musicHitTimer);
+      musicHitTimer = null;
       energyAverage = 0;
       lastQuietAt = performance.now();
       document.body.style.setProperty('--music-level', '0');
       document.body.classList.remove('music-hit');
+      document.body.classList.remove('music-reactive');
     }
 
     function startMusicAnalysis() {
-      if (!state.musicReactiveLights || state.theme !== 'christmas' || !els.directAudio.src) return;
+      if (!state.musicReactiveLights || state.theme !== 'christmas' || !els.directAudio.src || els.directAudio.paused) return;
       if (musicFrame) return;
       energyAverage = 0;
       lastQuietAt = performance.now();
@@ -1327,6 +1331,7 @@
         return;
       }
 
+      document.body.classList.add('music-reactive');
       const sample = (now) => {
         if (!state.musicReactiveLights || state.theme !== 'christmas' || els.directAudio.paused || !audioAnalyser) {
           stopMusicAnalysis();
@@ -1351,7 +1356,11 @@
         if (isBeat) {
           lastBeatAt = now;
           document.body.classList.add('music-hit');
-          setTimeout(() => document.body.classList.remove('music-hit'), 100);
+          if (musicHitTimer) clearTimeout(musicHitTimer);
+          musicHitTimer = setTimeout(() => {
+            document.body.classList.remove('music-hit');
+            musicHitTimer = null;
+          }, 100);
         }
         musicFrame = requestAnimationFrame(sample);
       };
@@ -1489,7 +1498,6 @@
         btn.classList.toggle('active', btn.dataset.theme === state.theme);
       });
       els.statusText.textContent = getHeaderTitle(state.isPlaying);
-      document.body.classList.toggle('music-reactive', state.musicReactiveLights);
       if (state.theme === 'christmas' && state.currentChannel?.isDirectStream && state.isPlaying) startMusicAnalysis();
       else stopMusicAnalysis();
     }
@@ -1516,29 +1524,27 @@
       els.opacitySlider.value = percent;
       els.opacityValue.textContent = `${percent}%`;
       els.musicReactiveToggle.checked = state.musicReactiveLights;
-      document.body.classList.toggle('music-reactive', state.musicReactiveLights);
     }
 
-    let visualSettingsTimer;
     function saveVisualSettings() {
-      clearTimeout(visualSettingsTimer);
-      visualSettingsTimer = setTimeout(() => {
-        window.sxmApi.saveVisualSettings({
-          opacity: state.opacity,
-          musicReactiveLights: state.musicReactiveLights
-        });
-      }, 120);
+      return window.sxmApi.saveVisualSettings({
+        opacity: state.opacity,
+        musicReactiveLights: state.musicReactiveLights
+      });
     }
 
     els.opacitySlider.addEventListener('input', () => {
       state.opacity = Number(els.opacitySlider.value) / 100;
       els.opacityValue.textContent = `${els.opacitySlider.value}%`;
+      window.sxmApi.previewWidgetOpacity(state.opacity);
+    });
+
+    els.opacitySlider.addEventListener('change', () => {
       saveVisualSettings();
     });
 
     els.musicReactiveToggle.addEventListener('change', () => {
       state.musicReactiveLights = els.musicReactiveToggle.checked;
-      document.body.classList.toggle('music-reactive', state.musicReactiveLights);
       if (state.musicReactiveLights) startMusicAnalysis();
       else stopMusicAnalysis();
       saveVisualSettings();

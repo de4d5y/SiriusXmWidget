@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld('sxmApi', {
   setDrawerOpen: (isOpen) => ipcRenderer.invoke('set_drawer_open', isOpen),
   saveTheme: (themeId) => ipcRenderer.invoke('save_theme', themeId),
   saveVisualSettings: (settings) => ipcRenderer.invoke('save_visual_settings', settings),
+  previewWidgetOpacity: (opacity) => ipcRenderer.invoke('preview_widget_opacity', opacity),
   toggleFavorite: (chNum) => ipcRenderer.invoke('toggle_favorite', chNum),
   selectChannel: (chNum) => ipcRenderer.invoke('select_channel', chNum),
   stepChannel: (delta, filterOrFav, searchQuery) => ipcRenderer.invoke('step_channel', delta, filterOrFav, searchQuery),
