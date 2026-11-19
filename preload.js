@@ -5,6 +5,8 @@ contextBridge.exposeInMainWorld('sxmApi', {
   setDrawerOpen: (isOpen) => ipcRenderer.invoke('set_drawer_open', isOpen),
   setMiniMode: (isMini) => ipcRenderer.invoke('set_mini_mode', isMini),
   saveTheme: (themeId) => ipcRenderer.invoke('save_theme', themeId),
+  saveVisualSettings: (settings) => ipcRenderer.invoke('save_visual_settings', settings),
+  previewWidgetOpacity: (opacity) => ipcRenderer.invoke('preview_widget_opacity', opacity),
   setVolume: (volume, muted) => ipcRenderer.invoke('set_volume', volume, muted),
   clearHistory: () => ipcRenderer.invoke('clear_history'),
   setLaunchAtStartup: (enabled) => ipcRenderer.invoke('set_launch_at_startup', enabled),

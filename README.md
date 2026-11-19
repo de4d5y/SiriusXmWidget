@@ -19,6 +19,8 @@ A lightweight Windows desktop radio widget for SiriusXM built with Electron.
 - Favorites list (with a Favorites-only channel cycling toggle)
 - Always-on-top pin mode
 - 9 built-in themes (Christmas, Blizzard, Thanksgiving, Pumpkin Spice, Autumn Woods, Hearth Gold, Midnight, Synthwave, NyQuil)
+- Theme-panel opacity dimmer (35–100%), saved between launches
+- Music-reactive Christmas lights for Free Holiday Radio streams, using live bass/energy changes when the stream permits audio analysis
 - Includes free holiday stream channels plus full SiriusXM web player integration
 
 ## Installation
@@ -66,5 +68,7 @@ Start the widget using either method:
 - **★ (top bar):** Toggle Prev/Next buttons between cycling all channels vs. Favorites only.
 - **● LIVE:** Jump back to the live broadcast if the stream falls behind.
 - **🎨:** Switch widget themes.
+- **🎨 → Opacity:** Dim the entire widget while keeping its transparent desktop background.
+- **🎨 → Music-reactive Christmas lights:** Toggle real-time light pulses for Free Holiday Radio. SiriusXM web-player audio is isolated in its own window and cannot be sampled by the widget.
 - **📌:** Toggle Always-on-Top mode.
 - **✕:** Close the widget.

@@ -31,6 +31,8 @@ let channels = [...FREE_HOLIDAY_CHANNELS, ...DEFAULT_CHANNELS];
 let favorites = ['2', '8', '34', '36', '51', '71', 'W1', 'W2'];
 let currentChannel = channels.find(c => String(c.number) === '71') || channels[0];
 let currentTheme = 'christmas';
+let widgetOpacity = 1;
+let musicReactiveLights = true;
 let isTuningUntil = 0;
 
 function getStartupLoginOptions() {
@@ -147,6 +149,12 @@ function loadUserData() {
       if (data.theme && typeof data.theme === 'string') {
         currentTheme = data.theme;
       }
+      if (typeof data.widget_opacity === 'number') {
+        widgetOpacity = Math.max(0.35, Math.min(1, data.widget_opacity));
+      }
+      if (typeof data.music_reactive_lights === 'boolean') {
+        musicReactiveLights = data.music_reactive_lights;
+      }
       if (typeof data.volume === 'number' && !Number.isNaN(data.volume)) {
         currentVolume = Math.max(0, Math.min(100, Math.round(data.volume)));
       }
@@ -190,6 +198,8 @@ function saveUserData() {
     const payload = {
       favorites,
       theme: currentTheme,
+      widget_opacity: widgetOpacity,
+      music_reactive_lights: musicReactiveLights,
       last_channel: currentChannel ? String(currentChannel.number) : '71',
       volume: currentVolume,
       is_muted: isMuted,
@@ -653,6 +663,7 @@ function createWindows() {
   });
 
   widgetWin.loadFile(path.join(__dirname, 'ui.html'));
+  widgetWin.setOpacity(widgetOpacity);
 
   let savePosTimer = null;
   widgetWin.on('move', () => {
@@ -711,6 +722,8 @@ ipcMain.handle('get_initial_state', () => {
     current_channel: currentChannel,
     is_playing: isPlaying,
     theme: currentTheme,
+    widget_opacity: widgetOpacity,
+    music_reactive_lights: musicReactiveLights,
     volume: currentVolume,
     is_muted: isMuted,
     mini_mode: isMiniMode,
@@ -725,6 +738,27 @@ ipcMain.handle('save_theme', (_event, themeId) => {
     saveUserData();
   }
   return currentTheme;
+});
+
+ipcMain.handle('save_visual_settings', (_event, settings) => {
+  if (settings && typeof settings === 'object') {
+    if (typeof settings.opacity === 'number' && Number.isFinite(settings.opacity)) {
+      widgetOpacity = Math.max(0.35, Math.min(1, settings.opacity));
+      if (widgetWin && !widgetWin.isDestroyed()) widgetWin.setOpacity(widgetOpacity);
+    }
+    if (typeof settings.musicReactiveLights === 'boolean') {
+      musicReactiveLights = settings.musicReactiveLights;
+    }
+    saveUserData();
+  }
+  return { opacity: widgetOpacity, musicReactiveLights };
+});
+
+ipcMain.handle('preview_widget_opacity', (_event, opacity) => {
+  if (typeof opacity !== 'number' || !Number.isFinite(opacity)) return widgetOpacity;
+  widgetOpacity = Math.max(0.35, Math.min(1, opacity));
+  if (widgetWin && !widgetWin.isDestroyed()) widgetWin.setOpacity(widgetOpacity);
+  return widgetOpacity;
 });
 
 ipcMain.handle('set_volume', async (_event, volume, muted) => {
