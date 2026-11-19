@@ -1,0 +1,22 @@
+# Personal / session data (never commit)
+sxm_profile/
+user_data.json
+
+# Dependencies & build artifacts
+node_modules/
+dist/
+out/
+
+# Machine-specific shortcuts & OS files
+*.lnk
+Thumbs.db
+.DS_Store
+*.log
+
+# Unused legacy Python prototype & extra assets
+__pycache__/
+*.pyc
+main.py
+channels.py
+icon.png
+sxm_holiday.ico

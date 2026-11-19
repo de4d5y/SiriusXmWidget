@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SiriusXM Desktop Widget</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+    /* Default Theme Variables (Overridden by data-theme on body) */
+    :root,
+    body[data-theme="christmas"] {
+      --bg-shell: linear-gradient(145deg, rgba(16, 38, 28, 0.97) 0%, rgba(18, 12, 16, 0.99) 100%);
+      --bg-drawer: rgba(11, 22, 17, 0.97);
+      --bg-card: rgba(255, 255, 255, 0.06);
+      --bg-card-hover: rgba(255, 255, 255, 0.13);
+      --border-glass: rgba(251, 191, 36, 0.28);
+      --accent: #ef4444;
+      --accent-secondary: #10b981;
+      --accent-glow: rgba(239, 68, 68, 0.42);
+      --play-btn-grad: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+      --play-btn-shadow: rgba(239, 68, 68, 0.5);
+      --badge-bg: rgba(16, 185, 129, 0.2);
+      --badge-border: rgba(16, 185, 129, 0.45);
+      --badge-text: #6ee7b7;
+      --text-primary: #fef2f2;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --fav-gold: #fbbf24;
+      --live-green: #10b981;
+      --show-snow: 1;
+      --show-lights: 1;
+    }
+
+    body[data-theme="blizzard"] {
+      --bg-shell: linear-gradient(145deg, rgba(15, 29, 52, 0.97) 0%, rgba(8, 16, 32, 0.99) 100%);
+      --bg-drawer: rgba(9, 18, 34, 0.97);
+      --bg-card: rgba(255, 255, 255, 0.07);
+      --bg-card-hover: rgba(255, 255, 255, 0.14);
+      --border-glass: rgba(125, 211, 252, 0.3);
+      --accent: #38bdf8;
+      --accent-secondary: #bae6fd;
+      --accent-glow: rgba(56, 189, 248, 0.4);
+      --play-btn-grad: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+      --play-btn-shadow: rgba(56, 189, 248, 0.45);
+      --badge-bg: rgba(56, 189, 248, 0.18);
+      --badge-border: rgba(56, 189, 248, 0.4);
+      --badge-text: #7dd3fc;
+      --text-primary: #f0f9ff;
+      --text-secondary: #bae6fd;
+      --text-muted: #7dd3fc;
+      --fav-gold: #fde047;
+      --live-green: #34d399;
+      --show-snow: 1;
+      --show-lights: 0;
+    }
+
+    body[data-theme="midnight"] {
+      --bg-shell: linear-gradient(145deg, rgba(20, 24, 38, 0.97) 0%, rgba(11, 13, 21, 0.99) 100%);
+      --bg-drawer: rgba(9, 11, 17, 0.97);
+      --bg-card: rgba(255, 255, 255, 0.05);
+      --bg-card-hover: rgba(255, 255, 255, 0.11);
+      --border-glass: rgba(255, 255, 255, 0.14);
+      --accent: #00d2ff;
+      --accent-secondary: #0072ff;
+      --accent-glow: rgba(0, 210, 255, 0.35);
+      --play-btn-grad: linear-gradient(135deg, #00d2ff 0%, #0072ff 100%);
+      --play-btn-shadow: rgba(0, 140, 255, 0.45);
+      --badge-bg: rgba(0, 210, 255, 0.16);
+      --badge-border: rgba(0, 210, 255, 0.35);
+      --badge-text: #00d2ff;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --fav-gold: #fbbf24;
+      --live-green: #10b981;
+      --show-snow: 0;
+      --show-lights: 0;
+    }
+
+    body[data-theme="synthwave"] {
+      --bg-shell: linear-gradient(145deg, rgba(34, 12, 48, 0.97) 0%, rgba(15, 7, 26, 0.99) 100%);
+      --bg-drawer: rgba(16, 6, 26, 0.97);
+      --bg-card: rgba(255, 255, 255, 0.06);
+      --bg-card-hover: rgba(255, 255, 255, 0.13);
+      --border-glass: rgba(244, 114, 182, 0.3);
+      --accent: #f43f5e;
+      --accent-secondary: #a855f7;
+      --accent-glow: rgba(244, 63, 94, 0.4);
+      --play-btn-grad: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+      --play-btn-shadow: rgba(236, 72, 153, 0.5);
+      --badge-bg: rgba(236, 72, 153, 0.2);
+      --badge-border: rgba(236, 72, 153, 0.45);
+      --badge-text: #f472b6;
+      --text-primary: #fdf2f8;
+      --text-secondary: #e9d5ff;
+      --text-muted: #a855f7;
+      --fav-gold: #fbbf24;
+      --live-green: #10b981;
+      --show-snow: 0;
+      --show-lights: 0;
+    }
+
+    body[data-theme="hearth"] {
+      --bg-shell: linear-gradient(145deg, rgba(43, 21, 14, 0.97) 0%, rgba(22, 11, 8, 0.99) 100%);
+      --bg-drawer: rgba(24, 12, 8, 0.97);
+      --bg-card: rgba(255, 255, 255, 0.06);
+      --bg-card-hover: rgba(255, 255, 255, 0.12);
+      --border-glass: rgba(245, 158, 11, 0.32);
+      --accent: #f59e0b;
+      --accent-secondary: #ea580c;
+      --accent-glow: rgba(245, 158, 11, 0.4);
+      --play-btn-grad: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      --play-btn-shadow: rgba(245, 158, 11, 0.45);
+      --badge-bg: rgba(245, 158, 11, 0.18);
+      --badge-border: rgba(245, 158, 11, 0.4);
+      --badge-text: #fcd34d;
+      --text-primary: #fffbeb;
+      --text-secondary: #fde68a;
+      --text-muted: #d97706;
+      --fav-gold: #fbbf24;
+      --live-green: #10b981;
+      --show-snow: 0;
+      --show-lights: 1;
+    }
+
+    body[data-theme="nyquil"] {
+      --bg-shell: linear-gradient(145deg, rgba(5, 46, 36, 0.97) 0%, rgba(2, 22, 18, 0.99) 100%);
+      --bg-drawer: rgba(3, 27, 22, 0.98);
+      --bg-card: rgba(16, 185, 129, 0.08);
+      --bg-card-hover: rgba(16, 185, 129, 0.16);
+      --border-glass: rgba(16, 185, 129, 0.42);
+      --accent: #10b981;
+      --accent-secondary: #059669;
+      --accent-glow: rgba(16, 185, 129, 0.55);
+      --play-btn-grad: linear-gradient(135deg, #00e676 0%, #059669 100%);
+      --play-btn-shadow: rgba(0, 230, 118, 0.48);
+      --badge-bg: rgba(16, 185, 129, 0.22);
+      --badge-border: rgba(52, 211, 153, 0.5);
+      --badge-text: #6ee7b7;
+      --text-primary: #ecfdf5;
+      --text-secondary: #6ee7b7;
+      --text-muted: #34d399;
+      --fav-gold: #a7f3d0;
+      --live-green: #00e676;
+      --show-snow: 1;
+      --show-lights: 0;
+    }
+
+    body[data-theme="thanksgiving"] {
+      --bg-shell: linear-gradient(145deg, rgba(46, 20, 14, 0.97) 0%, rgba(24, 11, 8, 0.99) 100%);
+      --bg-drawer: rgba(25, 12, 9, 0.98);
+      --bg-card: rgba(234, 88, 12, 0.08);
+      --bg-card-hover: rgba(234, 88, 12, 0.16);
+      --border-glass: rgba(245, 158, 11, 0.42);
+      --accent: #ea580c;
+      --accent-secondary: #dc2626;
+      --accent-glow: rgba(234, 88, 12, 0.48);
+      --play-btn-grad: linear-gradient(135deg, #f97316 0%, #b91c1c 100%);
+      --play-btn-shadow: rgba(234, 88, 12, 0.5);
+      --badge-bg: rgba(234, 88, 12, 0.22);
+      --badge-border: rgba(251, 146, 60, 0.48);
+      --badge-text: #fdba74;
+      --text-primary: #fff7ed;
+      --text-secondary: #fed7aa;
+      --text-muted: #fb923c;
+      --fav-gold: #fbbf24;
+      --live-green: #34d399;
+      --show-snow: 1;
+      --show-lights: 0;
+    }
+
+    body[data-theme="pumpkin"] {
+      --bg-shell: linear-gradient(145deg, rgba(54, 27, 13, 0.97) 0%, rgba(27, 14, 7, 0.99) 100%);
+      --bg-drawer: rgba(29, 15, 7, 0.98);
+      --bg-card: rgba(249, 115, 22, 0.08);
+      --bg-card-hover: rgba(249, 115, 22, 0.16);
+      --border-glass: rgba(251, 146, 60, 0.4);
+      --accent: #f97316;
+      --accent-secondary: #d97706;
+      --accent-glow: rgba(249, 115, 22, 0.45);
+      --play-btn-grad: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
+      --play-btn-shadow: rgba(249, 115, 22, 0.48);
+      --badge-bg: rgba(249, 115, 22, 0.2);
+      --badge-border: rgba(251, 146, 60, 0.45);
+      --badge-text: #fed7aa;
+      --text-primary: #fff7ed;
+      --text-secondary: #ffedd5;
+      --text-muted: #fb923c;
+      --fav-gold: #fde047;
+      --live-green: #34d399;
+      --show-snow: 1;
+      --show-lights: 0;
+    }
+
+    body[data-theme="autumn"] {
+      --bg-shell: linear-gradient(145deg, rgba(36, 26, 16, 0.97) 0%, rgba(19, 15, 10, 0.99) 100%);
+      --bg-drawer: rgba(20, 15, 10, 0.98);
+      --bg-card: rgba(217, 119, 6, 0.08);
+      --bg-card-hover: rgba(217, 119, 6, 0.16);
+      --border-glass: rgba(217, 119, 6, 0.38);
+      --accent: #d97706;
+      --accent-secondary: #65a30d;
+      --accent-glow: rgba(217, 119, 6, 0.42);
+      --play-btn-grad: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
+      --play-btn-shadow: rgba(217, 119, 6, 0.48);
+      --badge-bg: rgba(101, 163, 13, 0.22);
+      --badge-border: rgba(132, 204, 22, 0.45);
+      --badge-text: #bef264;
+      --text-primary: #fefce8;
+      --text-secondary: #fde68a;
+      --text-muted: #ca8a04;
+      --fav-gold: #fbbf24;
+      --live-green: #84cc16;
+      --show-snow: 1;
+      --show-lights: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--text-primary);
+    }
+
+    .widget-shell {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-shell);
+      border: 2px solid var(--border-glass);
+      border-radius: 22px;
+      overflow: hidden;
+      transition: background 0.4s ease, border-color 0.4s ease;
+    }
+
+    /* Snowfall Canvas Overlay */
+    #snowCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      opacity: var(--show-snow, 1);
+      transition: opacity 0.4s ease;
+    }
+
+    /* Festive Christmas String Lights along Top Bar */
+    .christmas-lights {
+      position: absolute;
+      top: 38px;
+      left: 0;
+      right: 0;
+      height: 12px;
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+      pointer-events: none;
+      z-index: 5;
+      opacity: var(--show-lights, 1);
+      transition: opacity 0.4s ease;
+      padding: 0 14px;
+    }
+
+    .light-bulb {
+      width: 8px;
+      height: 10px;
+      border-radius: 50% 50% 60% 60%;
+      animation: twinkle 1.8s infinite alternate ease-in-out;
+    }
+
+    .light-bulb:nth-child(4n+1) {
+      background: #ff3b30;
+      box-shadow: 0 0 10px #ff3b30, 0 0 18px #ff3b30;
+      animation-delay: 0s;
+    }
+    .light-bulb:nth-child(4n+2) {
+      background: #34c759;
+      box-shadow: 0 0 10px #34c759, 0 0 18px #34c759;
+      animation-delay: 0.45s;
+    }
+    .light-bulb:nth-child(4n+3) {
+      background: #ffcc00;
+      box-shadow: 0 0 10px #ffcc00, 0 0 18px #ffcc00;
+      animation-delay: 0.9s;
+    }
+    .light-bulb:nth-child(4n+4) {
+      background: #00d2ff;
+      box-shadow: 0 0 10px #00d2ff, 0 0 18px #00d2ff;
+      animation-delay: 1.35s;
+    }
+
+    @keyframes twinkle {
+      0% { opacity: 0.45; transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1.1); }
+    }
+
+    /* Ambient Glow behind Artwork */
+    .ambient-glow {
+      position: absolute;
+      top: -40px;
+      left: -30px;
+      width: 320px;
+      height: 260px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      filter: blur(32px);
+      pointer-events: none;
+      z-index: 0;
+      transition: background 0.6s ease;
+    }
+
+    /* Top utility strip & Native Chromium OS Drag region (40px) */
+    .top-bar {
+      position: relative;
+      z-index: 6;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 40px;
+      padding: 0 18px;
+      background: rgba(0, 0, 0, 0.22);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      -webkit-app-region: drag;
+      flex-shrink: 0;
+    }
+
+    .brand-pill {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      flex: 1;
+      height: 100%;
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      transition: all 0.3s ease;
+    }
+
+    .status-dot.playing {
+      background: var(--live-green);
+      box-shadow: 0 0 12px var(--live-green);
+    }
+
+    .status-dot.auth-needed {
+      background: var(--fav-gold);
+      box-shadow: 0 0 12px var(--fav-gold);
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      -webkit-app-region: no-drag;
+    }
+
+    .go-live-pill {
+      background: rgba(16, 185, 129, 0.18);
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      color: #34d399;
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+      -webkit-app-region: no-drag;
+      margin-right: 4px;
+    }
+
+    .go-live-pill:hover {
+      background: rgba(16, 185, 129, 0.32);
+      border-color: #10b981;
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    .mini-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      color: var(--text-secondary);
+      width: 30px;
+      height: 28px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-size: 14px;
+      -webkit-app-region: no-drag;
+    }
+
+    .mini-btn:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+
+    .mini-btn.active {
+      color: var(--fav-gold);
+      border-color: rgba(251, 191, 36, 0.45);
+      background: rgba(251, 191, 36, 0.12);
+    }
+
+    .mini-btn.close-btn:hover {
+      background: rgba(239, 68, 68, 0.3);
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+    }
+
+    /* Theme Picker Popover Bar */
+    .theme-popover {
+      position: absolute;
+      top: 44px;
+      left: 16px;
+      right: 16px;
+      z-index: 50;
+      background: rgba(12, 16, 24, 0.98);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: none;
+      flex-direction: column;
+      gap: 9px;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-app-region: no-drag;
+    }
+
+    .theme-popover * {
+      -webkit-app-region: no-drag;
+    }
+
+    .theme-popover.open {
+      display: flex;
+    }
+
+    .theme-popover-title {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+    }
+
+    .theme-options {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .theme-chip {
+      flex: 1;
+      justify-content: center;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #f8fafc;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      -webkit-app-region: no-drag;
+    }
+
+    .theme-chip:hover {
+      background: rgba(255, 255, 255, 0.14);
+      transform: translateY(-1px);
+    }
+
+    .theme-chip.active {
+      border-color: var(--fav-gold);
+      background: rgba(251, 191, 36, 0.18);
+      color: #fff;
+    }
+
+    /* Main Player Deck (156px height) */
+    .player-deck {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 156px;
+      padding: 0 22px;
+      gap: 20px;
+      flex-shrink: 0;
+    }
+
+    /* Channel Logo / Album Art (114x114px) */
+    .art-wrapper {
+      position: relative;
+      width: 114px;
+      height: 114px;
+      border-radius: 20px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      -webkit-app-region: no-drag;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .art-wrapper:hover {
+      transform: scale(1.03);
+      border-color: var(--fav-gold);
+    }
+
+    .art-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+
+    .art-fallback {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      padding: 8px;
+    }
+
+    .art-ch-num {
+      font-size: 34px;
+      font-weight: 900;
+      line-height: 1;
+      color: #fff;
+      text-shadow: 0 3px 10px rgba(0,0,0,0.45);
+    }
+
+    .art-ch-label {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.85);
+      margin-top: 4px;
+    }
+
+    /* Equalizer Overlay when Playing */
+    .eq-bars {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      display: none;
+      align-items: flex-end;
+      gap: 3px;
+      height: 18px;
+      padding: 3px 5px;
+      background: rgba(0, 0, 0, 0.72);
+      border-radius: 6px;
+    }
+
+    .eq-bars.active {
+      display: flex;
+    }
+
+    .eq-bar {
+      width: 3.5px;
+      background: var(--fav-gold);
+      border-radius: 2px;
+      animation: eqBounce 0.8s infinite ease-in-out alternate;
+    }
+
+    .eq-bar:nth-child(1) { height: 6px; animation-delay: 0.1s; }
+    .eq-bar:nth-child(2) { height: 14px; animation-delay: 0.3s; }
+    .eq-bar:nth-child(3) { height: 9px; animation-delay: 0.2s; }
+
+    @keyframes eqBounce {
+      0% { height: 4px; }
+      100% { height: 14px; }
+    }
+
+    /* Track & Channel Info (Draggable except for star button) */
+    .now-playing {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .channel-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .ch-badge {
+      font-size: 13px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 7px;
+      background: var(--badge-bg);
+      color: var(--badge-text);
+      border: 1px solid var(--badge-border);
+      white-space: nowrap;
+    }
+
+    .ch-name {
+      font-size: 16.5px;
+      font-weight: 800;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .fav-star-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+      padding: 0 4px;
+      transition: transform 0.15s ease, color 0.15s ease;
+      -webkit-app-region: no-drag;
+    }
+
+    .fav-star-btn:hover {
+      transform: scale(1.22);
+      color: var(--fav-gold);
+    }
+
+    .fav-star-btn.favorited {
+      color: var(--fav-gold);
+      text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+    }
+
+    .track-title {
+      font-size: 23px;
+      font-weight: 800;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .track-artist {
+      font-size: 16.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Transport Controls */
+    .controls-cluster {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      flex-shrink: 0;
+      -webkit-app-region: no-drag;
+    }
+
+    .ctrl-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: var(--bg-card);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .ctrl-btn:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(255, 255, 255, 0.28);
+      transform: translateY(-2px);
+    }
+
+    .ctrl-btn:active {
+      transform: translateY(0);
+    }
+
+    .ctrl-btn.play-btn {
+      width: 62px;
+      height: 62px;
+      border-radius: 18px;
+      background: var(--play-btn-grad);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #fff;
+      box-shadow: 0 6px 20px var(--play-btn-shadow);
+    }
+
+    .ctrl-btn.play-btn:hover {
+      filter: brightness(1.1);
+      transform: translateY(-2px) scale(1.03);
+    }
+
+    .ctrl-btn.stop-btn:hover {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+    }
+
+    .ctrl-btn.drawer-toggle.open {
+      background: var(--badge-bg);
+      border-color: var(--badge-border);
+      color: var(--badge-text);
+    }
+
+    .ctrl-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+    }
+
+    .ctrl-btn.play-btn svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    /* Expandable Channel Drawer */
+    .channel-drawer {
+      position: relative;
+      z-index: 3;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-top: 1px solid var(--border-glass);
+      background: var(--bg-drawer);
+      overflow: hidden;
+      -webkit-app-region: no-drag;
+    }
+
+    .drawer-header {
+      padding: 14px 20px 10px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .search-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .search-box {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-box svg {
+      position: absolute;
+      left: 13px;
+      width: 18px;
+      height: 18px;
+      fill: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 11px;
+      padding: 9px 14px 9px 40px;
+      font-size: 14.5px;
+      color: var(--text-primary);
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--fav-gold);
+      background: rgba(255, 255, 255, 0.11);
+    }
+
+    .sync-btn {
+      background: rgba(16, 185, 129, 0.18);
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      color: #34d399;
+      border-radius: 11px;
+      padding: 9px 14px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+
+    .sync-btn:hover {
+      background: rgba(16, 185, 129, 0.3);
+      color: #fff;
+    }
+
+    /* Filter Tabs */
+    .filter-tabs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+
+    .filter-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab-pill {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-secondary);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+
+    .tab-pill:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: var(--text-primary);
+    }
+
+    .tab-pill.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 800;
+      box-shadow: 0 3px 10px var(--accent-glow);
+    }
+
+    /* Channel List Scroll Area */
+    .channel-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .channel-list::-webkit-scrollbar {
+      width: 7px;
+    }
+
+    .channel-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .channel-list::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 999px;
+    }
+
+    .channel-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+
+    .channel-item:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .channel-item.active {
+      background: var(--badge-bg);
+      border-color: var(--badge-border);
+    }
+
+    .ch-item-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .ch-item-swatch {
+      width: 44px;
+      height: 44px;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 900;
+      color: #fff;
+      flex-shrink: 0;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    }
+
+    .ch-item-info {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .ch-item-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ch-item-sub {
+      font-size: 13px;
+      color: var(--text-secondary);
+      opacity: 0.85;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ch-item-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .item-fav-btn {
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.25);
+      font-size: 21px;
+      cursor: pointer;
+      padding: 4px 6px;
+      transition: all 0.15s ease;
+    }
+
+    .item-fav-btn:hover {
+      color: var(--fav-gold);
+      transform: scale(1.2);
+    }
+
+    .item-fav-btn.favorited {
+      color: var(--fav-gold);
+    }
+
+    /* Footer bar inside drawer */
+    .drawer-footer {
+      padding: 10px 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-secondary);
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .footer-link {
+      background: none;
+      border: none;
+      color: var(--fav-gold);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .footer-link:hover {
+      text-decoration: underline;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body data-theme="christmas">
+  <div class="widget-shell">
+    <!-- Animated Snowfall Canvas (Active on Christmas & Blizzard themes) -->
+    <canvas id="snowCanvas"></canvas>
+
+    <!-- Twinkling Holiday String Lights -->
+    <div class="christmas-lights" id="christmasLights">
+      <div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div>
+      <div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div>
+      <div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div>
+      <div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div>
+      <div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div>
+    </div>
+
+    <div class="ambient-glow" id="ambientGlow"></div>
+
+    <!-- Top Mini Bar (OS Native Drag Region) -->
+    <div class="top-bar">
+      <div class="brand-pill">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">🎄 SIRIUSXM HOLIDAY EDITION</span>
+      </div>
+      <div class="top-actions">
+        <button class="go-live-pill" id="topGoLiveBtn" title="Jump to Live Broadcast Playback">● LIVE</button>
+        <button class="mini-btn" id="themeBtn" title="Change Widget Theme">🎨</button>
+        <button class="mini-btn" id="favCycleBtn" title="Cycle All Channels vs. Favorites Only (Prev/Next)">★</button>
+        <button class="mini-btn" id="loginBtn" title="Show/Hide SiriusXM Web Player (Sign In)">🌐</button>
+        <button class="mini-btn active" id="pinBtn" title="Toggle Always-on-Top">📌</button>
+        <button class="mini-btn close-btn" id="closeBtn" title="Close Widget">✕</button>
+      </div>
+    </div>
+
+    <!-- Theme Picker Popover -->
+    <div class="theme-popover" id="themePopover">
+      <div class="theme-popover-title">Select Widget Theme</div>
+      <div class="theme-options" id="themeOptions">
+        <button class="theme-chip active" data-theme="christmas">🎄 Christmas</button>
+        <button class="theme-chip" data-theme="blizzard">❄️ Blizzard</button>
+        <button class="theme-chip" data-theme="thanksgiving">🦃 Thanksgiving</button>
+        <button class="theme-chip" data-theme="pumpkin">🎃 Pumpkin Spice</button>
+        <button class="theme-chip" data-theme="autumn">🍂 Autumn Woods</button>
+        <button class="theme-chip" data-theme="hearth">🔥 Hearth Gold</button>
+        <button class="theme-chip" data-theme="midnight">🌌 Midnight</button>
+        <button class="theme-chip" data-theme="synthwave">🌆 Synthwave</button>
+        <button class="theme-chip" data-theme="nyquil">🧪 NyQuil</button>
+      </div>
+    </div>
+
+    <!-- Scaled-Up Main Player Deck -->
+    <div class="player-deck">
+      <div class="art-wrapper" id="artWrapper" title="Click to toggle Channel Drawer">
+        <img id="artImage" src="" alt="Channel Art" />
+        <div class="art-fallback" id="artFallback">
+          <span class="art-ch-num" id="artChNum">71</span>
+          <span class="art-ch-label">CH</span>
+        </div>
+        <div class="eq-bars" id="eqBars">
+          <div class="eq-bar"></div>
+          <div class="eq-bar"></div>
+          <div class="eq-bar"></div>
+        </div>
+      </div>
+
+      <div class="now-playing">
+        <div class="channel-row">
+          <span class="ch-badge" id="chBadge">CH 71</span>
+          <span class="ch-name" id="chName">Holiday Traditions</span>
+          <button class="fav-star-btn" id="currentFavBtn" title="Favorite this channel">★</button>
+        </div>
+        <div class="track-title" id="trackTitle">Ready to Stream</div>
+        <div class="track-artist" id="trackArtist">Click Play or select a channel</div>
+      </div>
+
+      <div class="controls-cluster">
+        <button class="ctrl-btn" id="prevBtn" title="Previous Channel">
+          <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+        </button>
+
+        <button class="ctrl-btn play-btn" id="playBtn" title="Play / Pause">
+          <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+
+        <button class="ctrl-btn stop-btn" id="stopBtn" title="Stop Stream">
+          <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+        </button>
+
+        <button class="ctrl-btn" id="nextBtn" title="Next Channel">
+          <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+        </button>
+
+        <button class="ctrl-btn drawer-toggle" id="drawerBtn" title="Browse Channels & Favorites">
+          <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Collapsible Channel & Favorites Drawer -->
+    <div class="channel-drawer" id="channelDrawer">
+      <div class="drawer-header">
+        <div class="search-row">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input type="text" class="search-input" id="searchInput" placeholder="Search channel name, number (e.g. 71), or genre..." />
+          </div>
+          <button class="sync-btn" id="jumpLiveBtn" title="Jump stream to Live playback edge">● Go Live</button>
+        </div>
+
+        <div class="filter-tabs" id="filterTabs">
+          <button class="tab-pill active" data-filter="all">All SXM (826)</button>
+          <button class="tab-pill" data-filter="favorites">★ Favorites</button>
+          <button class="tab-pill" data-filter="Free Radio">📻 Free Holiday Radio (11)</button>
+          <button class="tab-pill" data-filter="Holiday">🎄 SXM Holiday</button>
+          <button class="tab-pill" data-filter="Pop">Pop</button>
+          <button class="tab-pill" data-filter="Decades">Decades</button>
+          <button class="tab-pill" data-filter="Rock">Rock</button>
+          <button class="tab-pill" data-filter="Hip-Hop/R&B">Hip-Hop/R&B</button>
+          <button class="tab-pill" data-filter="Dance">Dance</button>
+          <button class="tab-pill" data-filter="Country">Country</button>
+          <button class="tab-pill" data-filter="Jazz/Classical">Jazz/Classical</button>
+          <button class="tab-pill" data-filter="Howard">Howard</button>
+          <button class="tab-pill" data-filter="Comedy">Comedy</button>
+          <button class="tab-pill" data-filter="Sports">Sports</button>
+          <button class="tab-pill" data-filter="Talk">Talk</button>
+          <button class="tab-pill" data-filter="News">News</button>
+          <button class="tab-pill" data-filter="Christian">Christian</button>
+          <button class="tab-pill" data-filter="Latino">Latino</button>
+          <button class="tab-pill" data-filter="Xtra">Xtra</button>
+        </div>
+      </div>
+
+      <div class="channel-list" id="channelList"></div>
+
+      <div class="drawer-footer">
+        <span id="channelCountLabel">826 Channels</span>
+        <button class="footer-link" id="openPlayerLink">Open SXM Player Window ↗</button>
+      </div>
+    </div>
+    <!-- Built-in HTML5 Audio Engine for Ad-Free Direct Internet Radio Streams -->
+    <audio id="directAudio" preload="none" crossorigin="anonymous" style="display:none;"></audio>
+  </div>
+
+  <script>
+    const state = {
+      channels: [],
+      favorites: [],
+      currentChannel: null,
+      isPlaying: false,
+      drawerOpen: false,
+      activeFilter: 'all',
+      searchQuery: '',
+      cycleFavoritesOnly: false,
+      alwaysOnTop: true,
+      theme: 'christmas'
+    };
+
+    const els = {
+      snowCanvas: document.getElementById('snowCanvas'),
+      ambientGlow: document.getElementById('ambientGlow'),
+      statusDot: document.getElementById('statusDot'),
+      statusText: document.getElementById('statusText'),
+      topGoLiveBtn: document.getElementById('topGoLiveBtn'),
+      themeBtn: document.getElementById('themeBtn'),
+      themePopover: document.getElementById('themePopover'),
+      themeOptions: document.getElementById('themeOptions'),
+      favCycleBtn: document.getElementById('favCycleBtn'),
+      loginBtn: document.getElementById('loginBtn'),
+      pinBtn: document.getElementById('pinBtn'),
+      closeBtn: document.getElementById('closeBtn'),
+      artWrapper: document.getElementById('artWrapper'),
+      artImage: document.getElementById('artImage'),
+      artFallback: document.getElementById('artFallback'),
+      artChNum: document.getElementById('artChNum'),
+      eqBars: document.getElementById('eqBars'),
+      chBadge: document.getElementById('chBadge'),
+      chName: document.getElementById('chName'),
+      currentFavBtn: document.getElementById('currentFavBtn'),
+      trackTitle: document.getElementById('trackTitle'),
+      trackArtist: document.getElementById('trackArtist'),
+      prevBtn: document.getElementById('prevBtn'),
+      playBtn: document.getElementById('playBtn'),
+      playIcon: document.getElementById('playIcon'),
+      stopBtn: document.getElementById('stopBtn'),
+      nextBtn: document.getElementById('nextBtn'),
+      drawerBtn: document.getElementById('drawerBtn'),
+      searchInput: document.getElementById('searchInput'),
+      jumpLiveBtn: document.getElementById('jumpLiveBtn'),
+      filterTabs: document.getElementById('filterTabs'),
+      channelList: document.getElementById('channelList'),
+      channelCountLabel: document.getElementById('channelCountLabel'),
+      openPlayerLink: document.getElementById('openPlayerLink'),
+      directAudio: document.getElementById('directAudio')
+    };
+
+    function playOrStopDirectStream(ch, shouldPlay) {
+      if (!els.directAudio) return;
+      if (!ch || !ch.isDirectStream || !shouldPlay) {
+        els.directAudio.pause();
+        els.directAudio.removeAttribute('src');
+        els.directAudio.load();
+        return;
+      }
+      if (els.directAudio.src !== ch.streamUrl) {
+        els.directAudio.src = ch.streamUrl;
+      }
+      els.directAudio.play().catch(err => console.warn('Direct stream play error:', err));
+    }
+
+    // Subtle Snowfall Animation for Christmas & Blizzard Themes
+    function initSnowfall() {
+      const canvas = els.snowCanvas;
+      const ctx = canvas.getContext('2d');
+      let flakes = [];
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      const leafColors = [
+        'rgba(234, 88, 12, 0.55)',
+        'rgba(220, 38, 38, 0.5)',
+        'rgba(245, 158, 11, 0.55)',
+        'rgba(217, 119, 6, 0.5)'
+      ];
+
+      for (let i = 0; i < 42; i++) {
+        flakes.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          r: Math.random() * 2.2 + 0.8,
+          speedY: Math.random() * 0.65 + 0.25,
+          speedX: (Math.random() - 0.5) * 0.35,
+          alpha: Math.random() * 0.45 + 0.15,
+          angle: Math.random() * Math.PI * 2,
+          spin: (Math.random() - 0.5) * 0.025,
+          leafColor: leafColors[i % leafColors.length]
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (state.theme === 'christmas' || state.theme === 'blizzard') {
+          for (const f of flakes) {
+            ctx.beginPath();
+            ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 255, ${f.alpha})`;
+            ctx.fill();
+            f.y += f.speedY;
+            f.x += f.speedX;
+            if (f.y > canvas.height) {
+              f.y = -4;
+              f.x = Math.random() * canvas.width;
+            }
+            if (f.x > canvas.width) f.x = 0;
+            if (f.x < 0) f.x = canvas.width;
+          }
+        } else if (state.theme === 'thanksgiving' || state.theme === 'pumpkin' || state.theme === 'autumn') {
+          // Drifting Autumn Leaves animation!
+          for (const f of flakes) {
+            ctx.save();
+            ctx.translate(f.x, f.y);
+            ctx.rotate(f.angle);
+            ctx.beginPath();
+            ctx.ellipse(0, 0, f.r * 2.2, f.r * 1.1, 0, 0, Math.PI * 2);
+            ctx.fillStyle = f.leafColor;
+            ctx.fill();
+            ctx.restore();
+
+            f.y += f.speedY * 0.75;
+            f.x += Math.sin(f.y * 0.025) * 0.45 + f.speedX;
+            f.angle += f.spin;
+            if (f.y > canvas.height + 8) {
+              f.y = -8;
+              f.x = Math.random() * canvas.width;
+            }
+            if (f.x > canvas.width + 8) f.x = -4;
+            if (f.x < -8) f.x = canvas.width + 4;
+          }
+        } else if (state.theme === 'nyquil') {
+          // Rising liquid-gel bubbles for NyQuil theme!
+          for (const f of flakes) {
+            ctx.beginPath();
+            ctx.arc(f.x, f.y, f.r * 1.35, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(52, 211, 153, ${f.alpha * 0.65})`;
+            ctx.fill();
+            f.y -= f.speedY * 0.65;
+            f.x += Math.sin(f.y * 0.03) * 0.25;
+            if (f.y < -6) {
+              f.y = canvas.height + 4;
+              f.x = Math.random() * canvas.width;
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    function getHeaderTitle(playing) {
+      if (state.theme === 'christmas' || state.theme === 'blizzard') {
+        return playing ? '🎄 LIVE STREAMING' : '🎄 SIRIUSXM HOLIDAY EDITION';
+      }
+      if (state.theme === 'thanksgiving') {
+        return playing ? '🦃 LIVE STREAMING' : '🦃 SIRIUSXM THANKSGIVING EDITION';
+      }
+      if (state.theme === 'pumpkin' || state.theme === 'autumn') {
+        return playing ? '🍂 LIVE STREAMING' : '🍂 SIRIUSXM AUTUMN EDITION';
+      }
+      if (state.theme === 'nyquil') {
+        return playing ? '🧪 LIVE STREAMING' : '🧪 SIRIUSXM NIGHTTIME EDITION';
+      }
+      return playing ? 'LIVE STREAMING' : 'SIRIUSXM DESKTOP WIDGET';
+    }
+
+    function applyTheme(themeId) {
+      state.theme = themeId || 'christmas';
+      document.body.setAttribute('data-theme', state.theme);
+      document.querySelectorAll('.theme-chip').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.theme === state.theme);
+      });
+      els.statusText.textContent = getHeaderTitle(state.isPlaying);
+    }
+
+    // Theme Picker Events
+    els.themeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      els.themePopover.classList.toggle('open');
+      els.themeBtn.classList.toggle('active', els.themePopover.classList.contains('open'));
+    });
+
+    els.themeOptions.addEventListener('click', async (e) => {
+      const chip = e.target.closest('.theme-chip');
+      if (!chip) return;
+      const newTheme = chip.dataset.theme;
+      applyTheme(newTheme);
+      els.themePopover.classList.remove('open');
+      els.themeBtn.classList.remove('active');
+      await window.sxmApi.saveTheme(newTheme);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!els.themePopover.contains(e.target) && e.target !== els.themeBtn) {
+        els.themePopover.classList.remove('open');
+        els.themeBtn.classList.remove('active');
+      }
+    });
+
+    function updatePlayIcon(playing) {
+      if (playing) {
+        els.playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+        els.eqBars.classList.add('active');
+        els.statusDot.className = 'status-dot playing';
+      } else {
+        els.playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+        els.eqBars.classList.remove('active');
+        els.statusDot.className = 'status-dot';
+      }
+      els.statusText.textContent = getHeaderTitle(playing);
+    }
+
+    function updateCurrentChannelUI(ch) {
+      if (!ch) return;
+      state.currentChannel = ch;
+      els.chBadge.textContent = ch.isDirectStream ? `📻 ${ch.number}` : `CH ${ch.number}`;
+      els.chName.textContent = ch.name;
+      els.artChNum.textContent = ch.number;
+
+      const color = ch.color || '#ef4444';
+      els.artWrapper.style.background = `linear-gradient(135deg, ${color}dd, #0f172a)`;
+      els.ambientGlow.style.background = `radial-gradient(circle, ${color}55 0%, transparent 70%)`;
+
+      const isFav = state.favorites.includes(String(ch.number));
+      els.currentFavBtn.classList.toggle('favorited', isFav);
+
+      renderChannelList();
+    }
+
+    function renderChannelList() {
+      const q = state.searchQuery.trim().toLowerCase();
+      const filtered = state.channels.filter(ch => {
+        if (state.activeFilter === 'favorites' && !state.favorites.includes(String(ch.number))) {
+          return false;
+        }
+        if (state.activeFilter === 'all' && !q && ch.isDirectStream) {
+          // Keep "All SXM (826)" dedicated to SiriusXM channels unless searching or in Free Holiday Radio / Favorites
+          return false;
+        }
+        if (state.activeFilter !== 'all' && state.activeFilter !== 'favorites') {
+          if ((ch.genre || '').toLowerCase() !== state.activeFilter.toLowerCase()) {
+            return false;
+          }
+        }
+        if (q) {
+          const matchName = ch.name.toLowerCase().includes(q);
+          const matchNum = String(ch.number).toLowerCase().includes(q);
+          const matchGenre = (ch.genre || '').toLowerCase().includes(q);
+          const matchDesc = (ch.desc || '').toLowerCase().includes(q);
+          return matchName || matchNum || matchGenre || matchDesc;
+        }
+        return true;
+      });
+
+      els.channelCountLabel.textContent = `${filtered.length} Channel${filtered.length === 1 ? '' : 's'}`;
+
+      if (filtered.length === 0) {
+        els.channelList.innerHTML = `<div class="empty-state">No channels match your filter.</div>`;
+        return;
+      }
+
+      els.channelList.innerHTML = filtered.map(ch => {
+        const isFav = state.favorites.includes(String(ch.number));
+        const isActive = state.currentChannel && String(state.currentChannel.number) === String(ch.number);
+        const color = ch.color || '#00d2ff';
+        const prefix = ch.isDirectStream ? `Free Stream` : `Ch ${ch.number}`;
+        const subText = ch.desc ? `${prefix} • ${ch.desc}` : `${prefix} • ${ch.genre || 'SiriusXM'}`;
+        return `
+          <div class="channel-item ${isActive ? 'active' : ''}" data-number="${ch.number}">
+            <div class="ch-item-left">
+              <div class="ch-item-swatch" style="background: ${color}">${ch.number}</div>
+              <div class="ch-item-info">
+                <div class="ch-item-title">${ch.name}</div>
+                <div class="ch-item-sub">${subText}</div>
+              </div>
+            </div>
+            <div class="ch-item-right">
+              <button class="item-fav-btn ${isFav ? 'favorited' : ''}" data-fav="${ch.number}" title="Toggle Favorite">★</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Event Delegation for Channel List
+    els.channelList.addEventListener('click', async (e) => {
+      const favBtn = e.target.closest('.item-fav-btn');
+      if (favBtn) {
+        e.stopPropagation();
+        const chNum = String(favBtn.dataset.fav);
+        const updatedFavs = await window.sxmApi.toggleFavorite(chNum);
+        state.favorites = updatedFavs;
+        if (state.currentChannel) {
+          els.currentFavBtn.classList.toggle('favorited', state.favorites.includes(String(state.currentChannel.number)));
+        }
+        renderChannelList();
+        return;
+      }
+
+      const item = e.target.closest('.channel-item');
+      if (item) {
+        const chNum = String(item.dataset.number);
+        const res = await window.sxmApi.selectChannel(chNum);
+        if (res && res.channel) {
+          updateCurrentChannelUI(res.channel);
+          state.isPlaying = res.is_playing;
+          playOrStopDirectStream(res.channel, state.isPlaying);
+          updatePlayIcon(state.isPlaying);
+        }
+      }
+    });
+
+    // Filter Tabs
+    els.filterTabs.addEventListener('click', (e) => {
+      const btn = e.target.closest('.tab-pill');
+      if (!btn) return;
+      document.querySelectorAll('.tab-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.activeFilter = btn.dataset.filter;
+      state.cycleFavoritesOnly = (state.activeFilter === 'favorites');
+      els.favCycleBtn.classList.toggle('active', state.cycleFavoritesOnly);
+      renderChannelList();
+    });
+
+    // Search Input
+    els.searchInput.addEventListener('input', (e) => {
+      state.searchQuery = e.target.value;
+      renderChannelList();
+    });
+
+    // Toggle Drawer
+    async function toggleDrawer() {
+      state.drawerOpen = !state.drawerOpen;
+      els.drawerBtn.classList.toggle('open', state.drawerOpen);
+      await window.sxmApi.setDrawerOpen(state.drawerOpen);
+    }
+
+    els.drawerBtn.addEventListener('click', toggleDrawer);
+    els.artWrapper.addEventListener('click', toggleDrawer);
+
+    // Current Channel Favorite Star
+    els.currentFavBtn.addEventListener('click', async () => {
+      if (!state.currentChannel) return;
+      const updatedFavs = await window.sxmApi.toggleFavorite(String(state.currentChannel.number));
+      state.favorites = updatedFavs;
+      els.currentFavBtn.classList.toggle('favorited', state.favorites.includes(String(state.currentChannel.number)));
+      renderChannelList();
+    });
+
+    // Transport Controls
+    els.playBtn.addEventListener('click', async () => {
+      const res = await window.sxmApi.togglePlay();
+      state.isPlaying = res.is_playing;
+      playOrStopDirectStream(state.currentChannel, state.isPlaying);
+      updatePlayIcon(state.isPlaying);
+    });
+
+    els.stopBtn.addEventListener('click', async () => {
+      await window.sxmApi.stopStream();
+      state.isPlaying = false;
+      playOrStopDirectStream(state.currentChannel, false);
+      updatePlayIcon(false);
+      els.trackTitle.textContent = 'Stream Stopped';
+    });
+
+    els.prevBtn.addEventListener('click', async () => {
+      const effectiveFilter = state.cycleFavoritesOnly ? 'favorites' : state.activeFilter;
+      const res = await window.sxmApi.stepChannel(-1, effectiveFilter, state.searchQuery);
+      if (res && res.channel) {
+        updateCurrentChannelUI(res.channel);
+        state.isPlaying = res.is_playing;
+        playOrStopDirectStream(res.channel, state.isPlaying);
+        updatePlayIcon(state.isPlaying);
+      }
+    });
+
+    els.nextBtn.addEventListener('click', async () => {
+      const effectiveFilter = state.cycleFavoritesOnly ? 'favorites' : state.activeFilter;
+      const res = await window.sxmApi.stepChannel(1, effectiveFilter, state.searchQuery);
+      if (res && res.channel) {
+        updateCurrentChannelUI(res.channel);
+        state.isPlaying = res.is_playing;
+        playOrStopDirectStream(res.channel, state.isPlaying);
+        updatePlayIcon(state.isPlaying);
+      }
+    });
+
+    // Jump to Live Playback ("● LIVE" / "● Go Live")
+    async function handleJumpToLive() {
+      els.statusText.textContent = 'SYNCING TO LIVE...';
+      if (state.currentChannel && state.currentChannel.isDirectStream) {
+        // Reconnect direct stream to live edge
+        playOrStopDirectStream(state.currentChannel, false);
+        playOrStopDirectStream(state.currentChannel, true);
+      } else {
+        await window.sxmApi.jumpToLive();
+      }
+      state.isPlaying = true;
+      updatePlayIcon(true);
+      setTimeout(() => {
+        if (state.isPlaying) {
+          els.statusText.textContent = (state.theme === 'christmas' || state.theme === 'blizzard')
+            ? '🎄 LIVE STREAMING'
+            : 'LIVE STREAMING';
+        }
+      }, 1200);
+    }
+
+    els.topGoLiveBtn.addEventListener('click', handleJumpToLive);
+    els.jumpLiveBtn.addEventListener('click', handleJumpToLive);
+
+    // Top bar utilities
+    els.favCycleBtn.addEventListener('click', () => {
+      state.cycleFavoritesOnly = !state.cycleFavoritesOnly;
+      state.activeFilter = state.cycleFavoritesOnly ? 'favorites' : 'all';
+      document.querySelectorAll('.tab-pill').forEach(b => {
+        b.classList.toggle('active', b.dataset.filter === state.activeFilter);
+      });
+      els.favCycleBtn.classList.toggle('active', state.cycleFavoritesOnly);
+      els.statusText.textContent = state.cycleFavoritesOnly ? 'CYCLE: FAVORITES ★' : 'CYCLE: ALL CHANNELS';
+      renderChannelList();
+    });
+
+    els.loginBtn.addEventListener('click', async () => {
+      const isVisible = await window.sxmApi.togglePlayerWindow();
+      els.loginBtn.classList.toggle('active', isVisible);
+    });
+
+    els.openPlayerLink.addEventListener('click', async () => {
+      const isVisible = await window.sxmApi.togglePlayerWindow();
+      els.loginBtn.classList.toggle('active', isVisible);
+    });
+
+    els.pinBtn.addEventListener('click', async () => {
+      state.alwaysOnTop = await window.sxmApi.toggleOnTop();
+      els.pinBtn.classList.toggle('active', state.alwaysOnTop);
+    });
+
+    els.closeBtn.addEventListener('click', () => {
+      window.sxmApi.closeApp();
+    });
+
+    // Metadata updates from Electron main process
+    window.sxmApi.onMetadataUpdate((meta) => {
+      if (!meta) return;
+      if (meta.updated_channels) {
+        state.channels = meta.updated_channels;
+      }
+      if (meta.synced_channel) {
+        updateCurrentChannelUI(meta.synced_channel);
+      }
+      if (meta.title) {
+        els.trackTitle.textContent = meta.title;
+      }
+      if (meta.artist) {
+        els.trackArtist.textContent = meta.artist;
+      }
+      if (typeof meta.is_playing === 'boolean') {
+        state.isPlaying = meta.is_playing;
+        updatePlayIcon(state.isPlaying);
+      }
+      if (meta.artwork) {
+        els.artImage.src = meta.artwork;
+        els.artImage.style.display = 'block';
+        els.artFallback.style.display = 'none';
+      } else {
+        els.artImage.style.display = 'none';
+        els.artFallback.style.display = 'flex';
+      }
+      if (meta.auth_needed) {
+        els.statusDot.className = 'status-dot auth-needed';
+        els.statusText.textContent = 'SIGN IN REQUIRED (🌐)';
+      }
+    });
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', async () => {
+      initSnowfall();
+      const init = await window.sxmApi.getInitialState();
+      state.channels = init.channels || [];
+      state.favorites = init.favorites || [];
+      state.currentChannel = init.current_channel || state.channels[0];
+      applyTheme(init.theme || 'christmas');
+      updateCurrentChannelUI(state.currentChannel);
+    });
+  </script>
+</body>
+</html>
