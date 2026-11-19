@@ -24,6 +24,8 @@ let channels = [...FREE_HOLIDAY_CHANNELS, ...DEFAULT_CHANNELS];
 let favorites = ['2', '8', '34', '36', '51', '71', 'W1', 'W2'];
 let currentChannel = channels.find(c => String(c.number) === '71') || channels[0];
 let currentTheme = 'christmas';
+let widgetOpacity = 1;
+let musicReactiveLights = true;
 let isTuningUntil = 0;
 
 function loadUserData() {
@@ -35,6 +37,12 @@ function loadUserData() {
       }
       if (data.theme && typeof data.theme === 'string') {
         currentTheme = data.theme;
+      }
+      if (typeof data.widget_opacity === 'number') {
+        widgetOpacity = Math.max(0.35, Math.min(1, data.widget_opacity));
+      }
+      if (typeof data.music_reactive_lights === 'boolean') {
+        musicReactiveLights = data.music_reactive_lights;
       }
       if (Array.isArray(data.custom_channels)) {
         const existingNums = new Set(channels.map(c => String(c.number)));
@@ -64,6 +72,8 @@ function saveUserData() {
     const payload = {
       favorites,
       theme: currentTheme,
+      widget_opacity: widgetOpacity,
+      music_reactive_lights: musicReactiveLights,
       last_channel: currentChannel ? String(currentChannel.number) : '71',
       custom_channels: customChannels
     };
@@ -507,6 +517,7 @@ function createWindows() {
   });
 
   widgetWin.loadFile(path.join(__dirname, 'ui.html'));
+  widgetWin.setOpacity(widgetOpacity);
 
   widgetWin.on('closed', () => {
     app.quit();
@@ -550,7 +561,9 @@ ipcMain.handle('get_initial_state', () => {
     favorites,
     current_channel: currentChannel,
     is_playing: isPlaying,
-    theme: currentTheme
+    theme: currentTheme,
+    widget_opacity: widgetOpacity,
+    music_reactive_lights: musicReactiveLights
   };
 });
 
@@ -560,6 +573,20 @@ ipcMain.handle('save_theme', (_event, themeId) => {
     saveUserData();
   }
   return currentTheme;
+});
+
+ipcMain.handle('save_visual_settings', (_event, settings) => {
+  if (settings && typeof settings === 'object') {
+    if (typeof settings.opacity === 'number' && Number.isFinite(settings.opacity)) {
+      widgetOpacity = Math.max(0.35, Math.min(1, settings.opacity));
+      if (widgetWin && !widgetWin.isDestroyed()) widgetWin.setOpacity(widgetOpacity);
+    }
+    if (typeof settings.musicReactiveLights === 'boolean') {
+      musicReactiveLights = settings.musicReactiveLights;
+    }
+    saveUserData();
+  }
+  return { opacity: widgetOpacity, musicReactiveLights };
 });
 
 ipcMain.handle('set_drawer_open', (_event, isOpen) => {

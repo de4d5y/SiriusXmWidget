@@ -280,6 +280,7 @@
       height: 10px;
       border-radius: 50% 50% 60% 60%;
       animation: twinkle 1.8s infinite alternate ease-in-out;
+      transition: filter 80ms linear, transform 80ms ease-out, opacity 80ms linear;
     }
 
     .light-bulb:nth-child(4n+1) {
@@ -306,6 +307,19 @@
     @keyframes twinkle {
       0% { opacity: 0.45; transform: scale(0.9); }
       100% { opacity: 1; transform: scale(1.1); }
+    }
+
+    body.music-reactive[data-theme="christmas"] .christmas-lights .light-bulb {
+      animation: none;
+      /* Keep a steady baseline; music can only make lights brighter. */
+      filter: brightness(calc(1 + var(--music-level, 0) * 1.15));
+      opacity: 1;
+      transform: scale(calc(1 + var(--music-level, 0) * 0.18));
+    }
+
+    body.music-reactive[data-theme="christmas"].music-hit .christmas-lights .light-bulb {
+      filter: brightness(2.2) saturate(1.35);
+      transform: scale(1.32);
     }
 
     /* Ambient Glow behind Artwork */
@@ -445,6 +459,8 @@
       border: 1px solid rgba(255, 255, 255, 0.22);
       border-radius: 14px;
       padding: 12px 16px;
+      max-height: calc(100% - 48px);
+      overflow-y: auto;
       display: none;
       flex-direction: column;
       gap: 9px;
@@ -475,6 +491,38 @@
       justify-content: space-between;
       gap: 8px;
       flex-wrap: wrap;
+    }
+
+    .visual-settings {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 8px 12px;
+      padding-top: 4px;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .visual-settings label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .opacity-slider {
+      width: 150px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .reactive-toggle {
+      accent-color: var(--accent);
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
     }
 
     .theme-chip {
@@ -1066,6 +1114,12 @@
     <!-- Theme Picker Popover -->
     <div class="theme-popover" id="themePopover">
       <div class="theme-popover-title">Select Widget Theme</div>
+      <div class="visual-settings">
+        <label for="opacitySlider">Transparency <span id="opacityValue">100%</span></label>
+        <input class="opacity-slider" id="opacitySlider" type="range" min="35" max="100" value="100" aria-label="Widget opacity" />
+        <label for="musicReactiveToggle" title="Uses real audio energy from Free Holiday Radio streams. SiriusXM web-player audio is isolated from this widget.">Music-reactive Christmas lights</label>
+        <input class="reactive-toggle" id="musicReactiveToggle" type="checkbox" checked aria-label="Enable music-reactive Christmas lights" />
+      </div>
       <div class="theme-options" id="themeOptions">
         <button class="theme-chip active" data-theme="christmas">🎄 Christmas</button>
         <button class="theme-chip" data-theme="blizzard">❄️ Blizzard</button>
@@ -1183,7 +1237,9 @@
       searchQuery: '',
       cycleFavoritesOnly: false,
       alwaysOnTop: true,
-      theme: 'christmas'
+      theme: 'christmas',
+      opacity: 1,
+      musicReactiveLights: true
     };
 
     const els = {
@@ -1195,6 +1251,9 @@
       themeBtn: document.getElementById('themeBtn'),
       themePopover: document.getElementById('themePopover'),
       themeOptions: document.getElementById('themeOptions'),
+      opacitySlider: document.getElementById('opacitySlider'),
+      opacityValue: document.getElementById('opacityValue'),
+      musicReactiveToggle: document.getElementById('musicReactiveToggle'),
       favCycleBtn: document.getElementById('favCycleBtn'),
       loginBtn: document.getElementById('loginBtn'),
       pinBtn: document.getElementById('pinBtn'),
@@ -1224,18 +1283,94 @@
       directAudio: document.getElementById('directAudio')
     };
 
+    // Direct-radio audio plays in this renderer, so Web Audio can safely measure its
+    // real energy. The SiriusXM player runs in a separate isolated BrowserWindow.
+    let audioContext = null;
+    let audioAnalyser = null;
+    let audioSamples = null;
+    let audioSourceConnected = false;
+    let musicFrame = null;
+    let energyAverage = 0;
+    let lastBeatAt = 0;
+    let lastQuietAt = 0;
+
+    function stopMusicAnalysis() {
+      if (musicFrame) cancelAnimationFrame(musicFrame);
+      musicFrame = null;
+      energyAverage = 0;
+      lastQuietAt = performance.now();
+      document.body.style.setProperty('--music-level', '0');
+      document.body.classList.remove('music-hit');
+    }
+
+    function startMusicAnalysis() {
+      if (!state.musicReactiveLights || state.theme !== 'christmas' || !els.directAudio.src) return;
+      if (musicFrame) return;
+      energyAverage = 0;
+      lastQuietAt = performance.now();
+      try {
+        if (!audioContext) audioContext = new AudioContext();
+        if (!audioSourceConnected) {
+          const source = audioContext.createMediaElementSource(els.directAudio);
+          audioAnalyser = audioContext.createAnalyser();
+          audioAnalyser.fftSize = 512;
+          audioAnalyser.smoothingTimeConstant = 0.68;
+          source.connect(audioAnalyser);
+          audioAnalyser.connect(audioContext.destination);
+          audioSamples = new Uint8Array(audioAnalyser.frequencyBinCount);
+          audioSourceConnected = true;
+        }
+        audioContext.resume().catch(() => {});
+      } catch (err) {
+        // Streams without CORS permission remain playable but cannot be sampled.
+        console.warn('Music-reactive lights unavailable for this stream:', err.message);
+        return;
+      }
+
+      const sample = (now) => {
+        if (!state.musicReactiveLights || state.theme !== 'christmas' || els.directAudio.paused || !audioAnalyser) {
+          stopMusicAnalysis();
+          return;
+        }
+        audioAnalyser.getByteFrequencyData(audioSamples);
+        // Bass/lower-mid energy gives a useful beat signal without reacting to hiss.
+        const bins = Math.max(2, Math.floor(audioSamples.length * 0.28));
+        let total = 0;
+        for (let i = 1; i < bins; i++) total += audioSamples[i];
+        const energy = total / ((bins - 1) * 255);
+        const baseline = energyAverage || energy;
+        const rise = Math.max(0, energy - baseline);
+        energyAverage = baseline * 0.92 + energy * 0.08;
+
+        // A transition out of near-silence is a song boundary, not a beat.
+        if (energy < 0.045) lastQuietAt = now;
+        const level = Math.max(0, Math.min(1, rise / 0.12));
+        const isBeat = energy > 0.09 && rise > Math.max(0.025, baseline * 0.24)
+          && now - lastQuietAt > 1100 && now - lastBeatAt > 180;
+        document.body.style.setProperty('--music-level', level.toFixed(3));
+        if (isBeat) {
+          lastBeatAt = now;
+          document.body.classList.add('music-hit');
+          setTimeout(() => document.body.classList.remove('music-hit'), 100);
+        }
+        musicFrame = requestAnimationFrame(sample);
+      };
+      musicFrame = requestAnimationFrame(sample);
+    }
+
     function playOrStopDirectStream(ch, shouldPlay) {
       if (!els.directAudio) return;
       if (!ch || !ch.isDirectStream || !shouldPlay) {
         els.directAudio.pause();
         els.directAudio.removeAttribute('src');
         els.directAudio.load();
+        stopMusicAnalysis();
         return;
       }
       if (els.directAudio.src !== ch.streamUrl) {
         els.directAudio.src = ch.streamUrl;
       }
-      els.directAudio.play().catch(err => console.warn('Direct stream play error:', err));
+      els.directAudio.play().then(startMusicAnalysis).catch(err => console.warn('Direct stream play error:', err));
     }
 
     // Subtle Snowfall Animation for Christmas & Blizzard Themes
@@ -1354,6 +1489,9 @@
         btn.classList.toggle('active', btn.dataset.theme === state.theme);
       });
       els.statusText.textContent = getHeaderTitle(state.isPlaying);
+      document.body.classList.toggle('music-reactive', state.musicReactiveLights);
+      if (state.theme === 'christmas' && state.currentChannel?.isDirectStream && state.isPlaying) startMusicAnalysis();
+      else stopMusicAnalysis();
     }
 
     // Theme Picker Events
@@ -1371,6 +1509,39 @@
       els.themePopover.classList.remove('open');
       els.themeBtn.classList.remove('active');
       await window.sxmApi.saveTheme(newTheme);
+    });
+
+    function renderVisualSettings() {
+      const percent = Math.round(state.opacity * 100);
+      els.opacitySlider.value = percent;
+      els.opacityValue.textContent = `${percent}%`;
+      els.musicReactiveToggle.checked = state.musicReactiveLights;
+      document.body.classList.toggle('music-reactive', state.musicReactiveLights);
+    }
+
+    let visualSettingsTimer;
+    function saveVisualSettings() {
+      clearTimeout(visualSettingsTimer);
+      visualSettingsTimer = setTimeout(() => {
+        window.sxmApi.saveVisualSettings({
+          opacity: state.opacity,
+          musicReactiveLights: state.musicReactiveLights
+        });
+      }, 120);
+    }
+
+    els.opacitySlider.addEventListener('input', () => {
+      state.opacity = Number(els.opacitySlider.value) / 100;
+      els.opacityValue.textContent = `${els.opacitySlider.value}%`;
+      saveVisualSettings();
+    });
+
+    els.musicReactiveToggle.addEventListener('change', () => {
+      state.musicReactiveLights = els.musicReactiveToggle.checked;
+      document.body.classList.toggle('music-reactive', state.musicReactiveLights);
+      if (state.musicReactiveLights) startMusicAnalysis();
+      else stopMusicAnalysis();
+      saveVisualSettings();
     });
 
     document.addEventListener('click', (e) => {
@@ -1663,6 +1834,9 @@
       state.channels = init.channels || [];
       state.favorites = init.favorites || [];
       state.currentChannel = init.current_channel || state.channels[0];
+      state.opacity = typeof init.widget_opacity === 'number' ? init.widget_opacity : 1;
+      state.musicReactiveLights = init.music_reactive_lights !== false;
+      renderVisualSettings();
       applyTheme(init.theme || 'christmas');
       updateCurrentChannelUI(state.currentChannel);
     });
