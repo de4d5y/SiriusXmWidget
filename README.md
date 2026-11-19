@@ -2,6 +2,17 @@
 
 A lightweight Windows desktop radio widget for SiriusXM built with Electron.
 
+## Screenshots
+
+### Compact Player
+![Compact Player](screenshots/compact.png)
+
+### Channel Browser Drawer
+![Channel Browser Drawer](screenshots/expanded.png)
+
+### Theme Picker (Synthwave)
+![Theme Picker](screenshots/themes.png)
+
 ## Features
 - Compact floating player with expandable channel drawer, search, and genre filters
 - Play/Pause, Stop, Previous/Next channel, and **● LIVE** jump-to-live controls
