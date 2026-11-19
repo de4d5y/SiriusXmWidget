@@ -12,19 +12,23 @@ A lightweight Windows desktop radio widget for SiriusXM built with Electron.
 
 ## Prerequisites
 - **Windows 10 / 11**
-- **Node.js** (v18+ recommended) — download from [nodejs.org](https://nodejs.org/)
+- **Node.js (LTS)** — download and install from [nodejs.org](https://nodejs.org/) (this includes `npm`, which handles all app dependencies automatically; no Python or extra tools are needed)
 - A **SiriusXM streaming account** (for full channel access)
 
 ## Installation
-1. Clone or download this repository:
-   ```bash
-   git clone https://github.com/de4d5y/sxm-widget.git
-   cd sxm-widget
-   ```
-2. Install dependencies:
+1. **Get the code** — either:
+   - Click **Code → Download ZIP** on GitHub and extract the folder anywhere on your PC, **or**
+   - Clone with Git:
+     ```bash
+     git clone https://github.com/de4d5y/sxm-widget.git
+     cd sxm-widget
+     ```
+2. **Open a terminal in the project folder** (e.g., open the `sxm-widget` folder in File Explorer, click the address bar, type `powershell`, and press Enter).
+3. **Install dependencies** (this downloads Electron and everything the app needs — takes ~1 minute the first time):
    ```bash
    npm install
    ```
+   *(If `npm` isn't recognized right after installing Node.js, close and reopen your terminal and try again.)*
 
 ## Usage
 Start the widget using either method:
