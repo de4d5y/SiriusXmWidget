@@ -13,6 +13,9 @@ A lightweight Windows desktop radio widget for SiriusXM built with Electron.
 ### Channel Browser Drawer (Favorites & Custom Streams)
 ![Channel Browser Drawer](screenshots/expanded.png)
 
+### Recent Track History & One-Click Lookup
+![Recent Track History](screenshots/history.png)
+
 ### Themes & Settings (Synthwave)
 ![Theme Picker](screenshots/themes.png)
 
@@ -31,8 +34,8 @@ A lightweight Windows desktop radio widget for SiriusXM built with Electron.
 ## Installation
 
 ### Option 1: Download the Portable `.exe` (Easiest — No Node.js Required)
-1. Go to the [**Releases**](https://github.com/de4d5y/sxm-widget/releases) page on GitHub.
-2. Download `SiriusXM-Widget-1.1.0-Portable.exe`.
+1. Go to the [**Releases**](https://github.com/de4d5y/SiriusXmWidget/releases) page on GitHub.
+2. Download `SiriusXM-Widget-1.2.0-Portable.exe`.
 3. Double-click it to run — no installation or extra software required.
    *(If Windows SmartScreen shows a warning on first launch, click **More info → Run anyway**.)*
 
@@ -43,8 +46,8 @@ A lightweight Windows desktop radio widget for SiriusXM built with Electron.
    - Click **Code → Download ZIP** on GitHub and extract the folder anywhere on your PC, **or**
    - Clone with Git:
      ```bash
-     git clone https://github.com/de4d5y/sxm-widget.git
-     cd sxm-widget
+     git clone https://github.com/de4d5y/SiriusXmWidget.git
+     cd SiriusXmWidget
      ```
 2. **Open a terminal in the project folder** (e.g., open the `sxm-widget` folder in File Explorer, click the address bar, type `powershell`, and press Enter).
 3. **Install dependencies** (takes ~1 minute the first time):
@@ -74,11 +77,11 @@ Start the widget using either method:
 - **★ (next to channel name):** Add or remove the current channel from Favorites.
 - **★ (top bar):** Toggle Prev/Next buttons between cycling all channels vs. Favorites only. Drag items by their `⋮⋮` handle in the **★ Favorites** tab to reorder them.
 - **● LIVE:** Jump back to the live broadcast if the stream falls behind.
-- **🎨 (Themes & Settings):** Switch between all 10 themes (including **🌈 Adaptive**), adjust **Opacity**, toggle **Music-reactive Christmas lights**, pick a proportional **📐 Size (S / M / L / XL)**, or enable **🚀 Launch with Windows**.
-- **🕒:** Open the **Recent Track History** (last 12 tracks) with one-click copy and Clear.
+- **🎨 (Themes & Settings):** Switch between all 10 themes (including **🌈 Adaptive**), adjust **Opacity**, toggle **Music-reactive Christmas lights**, **Scroll long titles**, or the optional **Mini audio visualizer**, pick a proportional **📐 Size (S / M / L / XL)**, enable **🚀 Launch with Windows**, **📤 Export / 📥 Import Backup**, or **🔄 Check Updates**.
+- **🕒:** Open the **Recent Track History** (last 12 tracks) with one-click **Spotify / YouTube / Genius Lyrics** lookup, one-click Copy, and Clear.
 - **🎲:** **Surprise Me** — tune to a random channel in your current filter or Favorites.
 - **▬ / ⤢:** Toggle **Mini Bar Mode** (slim single-row player) and expand back to full size.
-- **+ Add Stream (drawer footer):** Add custom internet radio stream URLs into the **📡 Custom** tab.
+- **+ Add Stream (drawer footer):** Add custom MP3/AAC/HLS (`.m3u8`) streams or `.pls` / `.m3u` playlist URLs into the **📡 Custom** tab with automatic live ICY song titles.
 - **🌐:** Show or hide the built-in SiriusXM Web Player window.
 - **📌:** Toggle Always-on-Top mode.
 - **✕:** Close the widget.
