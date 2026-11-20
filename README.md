@@ -22,11 +22,11 @@ A lightweight Windows desktop radio widget for SiriusXM built with Electron.
 - **Playback & Volume Controls:** Play/Pause, Stop, Previous/Next channel, **● LIVE** jump-to-live, and an in-widget **Volume Slider & Mute** toggle (with mouse-wheel support) synced across both SiriusXM and direct streams
 - **Favorites with Drag-and-Drop Ordering:** Star channels, reorder your Favorites list by dragging, and toggle Favorites-only Prev/Next cycling
 - **Direct Channel Number Entry:** Type any channel number (e.g. `71`, `W1`, `C1`) while focused on the widget for a car-radio-style HUD with live preview and **Enter** to tune
-- **Custom Radio Streams:** Add your own MP3/AAC internet radio stream URLs right from the drawer (`+ Add Stream`) with custom badge codes and accent colors
+- **Custom Radio Streams & Playlists:** Add your own MP3/AAC/HLS (`.m3u8`) streams or `.pls` / `.m3u` playlist URLs right from the drawer (`+ Add Stream`) with custom badge codes, accent colors, and live **ICY / Shoutcast song titles**
 - **Surprise Me (`🎲`):** Jump to a random channel within your active filter or Favorites
-- **Recent Track History (`🕒`):** Logs the last 12 played tracks with relative timestamps and one-click copy (`Artist - Title`)
+- **Recent Track History (`🕒`) & One-Click Lookup:** Logs the last 12 played tracks with relative timestamps, one-click copy (`Artist - Title`), and instant **Spotify / YouTube / Genius Lyrics** lookup buttons in both Now Playing and Track History
 - **10 Built-in Themes:** Christmas, Blizzard, Thanksgiving, Pumpkin Spice, Autumn Woods, Hearth Gold, Midnight, Synthwave, NyQuil, and **🌈 Adaptive** (automatically tints the widget to match the current track's album art)
-- **Visual & Desktop Polish:** Always-on-top pin mode, opacity dimmer (35–100%), music-reactive Christmas lights for Free Holiday Radio streams, remembered window position across restarts, and optional **Launch with Windows** startup toggle
+- **Visual, Audio & Reliability Polish:** Always-on-top pin mode, opacity dimmer (35–100%), **Mini Audio Visualizer** spectrum bars, music-reactive Christmas lights, **Stream Watchdog & Auto-Reconnect** (recovers dropped streams and auto-resumes SiriusXM inactivity prompts), **Backup / Restore** settings export/import, **Update Notifier**, remembered window position across restarts, and optional **Launch with Windows** startup toggle
 
 ## Installation
 

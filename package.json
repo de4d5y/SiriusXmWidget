@@ -17,7 +17,8 @@
       "channels.js",
       "free_channels.js",
       "icon.ico",
-      "package.json"
+      "package.json",
+      "node_modules/hls.js/dist/hls.min.js"
     ],
     "win": {
       "target": [
@@ -35,5 +36,8 @@
   "devDependencies": {
     "electron": "^45.2.3",
     "electron-builder": "^26.0.12"
+  },
+  "dependencies": {
+    "hls.js": "^1.7.4"
   }
 }

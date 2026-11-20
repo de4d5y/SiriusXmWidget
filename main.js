@@ -1,6 +1,8 @@
-const { app, BrowserWindow, ipcMain, screen, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, nativeImage, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const http = require('http');
+const https = require('https');
 const { DEFAULT_CHANNELS } = require('./channels');
 const { FREE_HOLIDAY_CHANNELS } = require('./free_channels');
 
@@ -35,7 +37,12 @@ let currentChannel = channels.find(c => String(c.number) === '71') || channels[0
 let currentTheme = 'christmas';
 let widgetOpacity = 1;
 let musicReactiveLights = true;
+let scrollLongTitles = true;
+let showVisualizer = false;
 let isTuningUntil = 0;
+let latestUpdateInfo = null;
+const GITHUB_RELEASES_API = 'https://api.github.com/repos/de4d5y/SiriusXmWidget/releases/latest';
+const GITHUB_RELEASES_PAGE = 'https://github.com/de4d5y/SiriusXmWidget/releases';
 
 function getStartupLoginOptions() {
   if (app.isPackaged) {
@@ -157,6 +164,12 @@ function loadUserData() {
       if (typeof data.music_reactive_lights === 'boolean') {
         musicReactiveLights = data.music_reactive_lights;
       }
+      if (typeof data.scroll_long_titles === 'boolean') {
+        scrollLongTitles = data.scroll_long_titles;
+      }
+      if (typeof data.show_visualizer === 'boolean') {
+        showVisualizer = data.show_visualizer;
+      }
       if (typeof data.volume === 'number' && !Number.isNaN(data.volume)) {
         currentVolume = Math.max(0, Math.min(100, Math.round(data.volume)));
       }
@@ -193,27 +206,33 @@ function loadUserData() {
   }
 }
 
+function buildUserDataPayload() {
+  const builtInNums = new Set([
+    ...FREE_HOLIDAY_CHANNELS.map(c => String(c.number)),
+    ...DEFAULT_CHANNELS.map(c => String(c.number))
+  ]);
+  const customChannels = channels.filter(c => !builtInNums.has(String(c.number)));
+  return {
+    favorites,
+    theme: currentTheme,
+    widget_opacity: widgetOpacity,
+    music_reactive_lights: musicReactiveLights,
+    scroll_long_titles: scrollLongTitles,
+    show_visualizer: showVisualizer,
+    last_channel: currentChannel ? String(currentChannel.number) : '71',
+    volume: currentVolume,
+    is_muted: isMuted,
+    mini_mode: isMiniMode,
+    widget_scale: widgetScale,
+    window_pos: savedWindowPos,
+    track_history: trackHistory,
+    custom_channels: customChannels
+  };
+}
+
 function saveUserData() {
   try {
-    const builtInNums = new Set([
-      ...FREE_HOLIDAY_CHANNELS.map(c => String(c.number)),
-      ...DEFAULT_CHANNELS.map(c => String(c.number))
-    ]);
-    const customChannels = channels.filter(c => !builtInNums.has(String(c.number)));
-    const payload = {
-      favorites,
-      theme: currentTheme,
-      widget_opacity: widgetOpacity,
-      music_reactive_lights: musicReactiveLights,
-      last_channel: currentChannel ? String(currentChannel.number) : '71',
-      volume: currentVolume,
-      is_muted: isMuted,
-      mini_mode: isMiniMode,
-      widget_scale: widgetScale,
-      window_pos: savedWindowPos,
-      track_history: trackHistory,
-      custom_channels: customChannels
-    };
+    const payload = buildUserDataPayload();
     fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
     fs.writeFileSync(DATA_FILE, JSON.stringify(payload, null, 2), 'utf-8');
   } catch (e) {
@@ -495,6 +514,278 @@ async function fetchFreeRadioMetadata(ch) {
   return null;
 }
 
+let icyMetaCache = { url: null, fetchedAt: 0, data: null, inFlight: false };
+
+function parseIcyStreamTitle(rawTitle, ch, icyName) {
+  const clean = String(rawTitle || '').replace(/\0+/g, '').trim();
+  if (!clean) {
+    if (icyName) {
+      return { title: icyName, artist: ch.desc || 'Custom Radio Stream', artwork: ch.defaultArt || null };
+    }
+    return null;
+  }
+  const sepMatch = clean.match(/^(.+?)\s+[-–—]\s+(.+)$/);
+  if (sepMatch) {
+    const artist = sepMatch[1].trim();
+    const title = sepMatch[2].trim();
+    if (artist && title) {
+      return { title, artist, artwork: ch.defaultArt || null };
+    }
+  }
+  return {
+    title: clean,
+    artist: icyName || ch.name || ch.desc || 'Custom Radio Stream',
+    artwork: ch.defaultArt || null
+  };
+}
+
+function readIcyOnce(targetUrl, redirectsLeft = 5) {
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (val) => {
+      if (!settled) {
+        settled = true;
+        resolve(val);
+      }
+    };
+
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(targetUrl);
+    } catch (e) {
+      return finish(null);
+    }
+
+    const client = parsedUrl.protocol === 'https:' ? https : http;
+    const req = client.get(parsedUrl, {
+      headers: {
+        'Icy-MetaData': '1',
+        'User-Agent': 'SXMDesktopWidget/1.0',
+        'Accept': '*/*'
+      },
+      timeout: 5500
+    }, (res) => {
+      if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location && redirectsLeft > 0) {
+        res.destroy();
+        try {
+          const nextUrl = new URL(res.headers.location, parsedUrl).toString();
+          return resolve(readIcyOnce(nextUrl, redirectsLeft - 1));
+        } catch (e) {
+          return finish(null);
+        }
+      }
+
+      const icyName = (res.headers['icy-name'] || '').toString().trim() || null;
+      const metaInt = parseInt(res.headers['icy-metaint'], 10);
+      if (!metaInt || metaInt <= 0 || metaInt > 524288) {
+        res.destroy();
+        return finish(icyName ? { streamTitle: null, icyName } : null);
+      }
+
+      let bytesToSkip = metaInt;
+      let metaLen = -1;
+      let metaBuf = Buffer.alloc(0);
+
+      res.on('data', (chunk) => {
+        let offset = 0;
+        if (bytesToSkip > 0) {
+          const skip = Math.min(bytesToSkip, chunk.length);
+          bytesToSkip -= skip;
+          offset += skip;
+        }
+        if (bytesToSkip === 0 && offset < chunk.length) {
+          if (metaLen === -1) {
+            metaLen = chunk[offset] * 16;
+            offset += 1;
+            if (metaLen === 0) {
+              res.destroy();
+              return finish(icyName ? { streamTitle: null, icyName } : null);
+            }
+          }
+          if (metaLen > 0 && offset < chunk.length) {
+            const needed = metaLen - metaBuf.length;
+            metaBuf = Buffer.concat([metaBuf, chunk.subarray(offset, offset + needed)]);
+            if (metaBuf.length >= metaLen) {
+              res.destroy();
+              const metaStr = metaBuf.toString('utf8').replace(/\0+/g, '');
+              const m = metaStr.match(/StreamTitle='([^']*)'/i);
+              return finish({ streamTitle: m ? m[1] : null, icyName });
+            }
+          }
+        }
+      });
+
+      res.on('end', () => finish(icyName ? { streamTitle: null, icyName } : null));
+      res.on('error', () => finish(null));
+    });
+
+    req.on('timeout', () => {
+      req.destroy();
+      finish(null);
+    });
+    req.on('error', () => finish(null));
+  });
+}
+
+async function fetchIcyMetadata(ch, force = false) {
+  if (!ch || !ch.streamUrl || ch.isHls) return null;
+  const url = ch.streamUrl;
+  const now = Date.now();
+  if (!force && icyMetaCache.url === url && (now - icyMetaCache.fetchedAt) < 8000) {
+    return icyMetaCache.data;
+  }
+  if (icyMetaCache.inFlight && icyMetaCache.url === url) {
+    return icyMetaCache.data;
+  }
+
+  icyMetaCache.inFlight = true;
+  icyMetaCache.url = url;
+  try {
+    const raw = await readIcyOnce(url);
+    const parsed = raw ? parseIcyStreamTitle(raw.streamTitle, ch, raw.icyName) : null;
+    icyMetaCache = { url, fetchedAt: Date.now(), data: parsed, inFlight: false };
+    return parsed;
+  } catch (e) {
+    icyMetaCache.inFlight = false;
+    return null;
+  }
+}
+
+async function fetchDirectStreamMetadata(ch, force = false) {
+  if (!ch || !ch.isDirectStream) return null;
+  if (ch.metaUrl) {
+    return fetchFreeRadioMetadata(ch);
+  }
+  return fetchIcyMetadata(ch, force);
+}
+
+async function resolveStreamPlaylistUrl(inputUrl) {
+  const cleanUrl = String(inputUrl || '').trim();
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(cleanUrl);
+  } catch (e) {
+    return { ok: false, error: 'Please enter a valid http:// or https:// URL.' };
+  }
+
+  const pathname = parsedUrl.pathname.toLowerCase();
+  const isPlsExt = pathname.endsWith('.pls');
+  const isM3uExt = pathname.endsWith('.m3u') || pathname.endsWith('.ram');
+  const isM3u8Ext = pathname.endsWith('.m3u8');
+
+  if (!isPlsExt && !isM3uExt && !isM3u8Ext) {
+    return { ok: true, streamUrl: cleanUrl, isHls: false };
+  }
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 7000);
+    const resp = await fetch(cleanUrl, {
+      headers: { 'User-Agent': 'SXMDesktopWidget/1.0' },
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    if (!resp.ok) {
+      return { ok: true, streamUrl: cleanUrl, isHls: isM3u8Ext };
+    }
+    const text = (await resp.text()).slice(0, 65536);
+
+    if (isPlsExt || /\[playlist\]/i.test(text)) {
+      const lines = text.split(/\r?\n/);
+      let foundUrl = null;
+      let foundTitle = null;
+      for (const line of lines) {
+        const fileMatch = line.match(/^\s*File\d+\s*=\s*(.+)$/i);
+        if (fileMatch && !foundUrl) {
+          const candidate = fileMatch[1].trim();
+          if (/^https?:\/\//i.test(candidate)) foundUrl = candidate;
+        }
+        const titleMatch = line.match(/^\s*Title\d+\s*=\s*(.+)$/i);
+        if (titleMatch && !foundTitle) {
+          foundTitle = titleMatch[1].trim();
+        }
+      }
+      if (foundUrl) {
+        return { ok: true, streamUrl: foundUrl, isHls: /\.m3u8(\?|$)/i.test(foundUrl), resolvedTitle: foundTitle };
+      }
+      return { ok: false, error: 'No stream URL found inside this .pls playlist.' };
+    }
+
+    // M3U / M3U8 handling
+    const isHlsManifest = /#EXT-X-(STREAM-INF|TARGETDURATION|MEDIA-SEQUENCE|VERSION)/i.test(text);
+    if (isHlsManifest) {
+      return { ok: true, streamUrl: cleanUrl, isHls: true };
+    }
+
+    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+    for (const line of lines) {
+      try {
+        const resolved = new URL(line, cleanUrl).toString();
+        if (/^https?:\/\//i.test(resolved)) {
+          return { ok: true, streamUrl: resolved, isHls: /\.m3u8(\?|$)/i.test(resolved) };
+        }
+      } catch (e) {}
+    }
+
+    return { ok: true, streamUrl: cleanUrl, isHls: isM3u8Ext };
+  } catch (e) {
+    return { ok: true, streamUrl: cleanUrl, isHls: isM3u8Ext };
+  }
+}
+
+function compareSemver(a, b) {
+  const pa = String(a || '').replace(/^v/i, '').split('.').map(n => parseInt(n, 10) || 0);
+  const pb = String(b || '').replace(/^v/i, '').split('.').map(n => parseInt(n, 10) || 0);
+  const len = Math.max(pa.length, pb.length, 3);
+  for (let i = 0; i < len; i++) {
+    const da = pa[i] || 0;
+    const db = pb[i] || 0;
+    if (da > db) return 1;
+    if (da < db) return -1;
+  }
+  return 0;
+}
+
+async function checkForUpdates(notifyRenderer = true) {
+  const currentVersion = app.getVersion();
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    const resp = await fetch(GITHUB_RELEASES_API, {
+      headers: {
+        'User-Agent': `SXMDesktopWidget/${currentVersion}`,
+        'Accept': 'application/vnd.github+json'
+      },
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    if (!resp.ok) {
+      return { ok: false, currentVersion, available: false };
+    }
+    const release = await resp.json();
+    const tag = String(release.tag_name || '').trim();
+    const latestVersion = tag.replace(/^v/i, '');
+    const available = !!latestVersion && compareSemver(latestVersion, currentVersion) > 0;
+    const info = {
+      ok: true,
+      available,
+      currentVersion,
+      latestVersion: latestVersion || currentVersion,
+      releaseName: release.name || tag || `v${latestVersion}`,
+      releaseUrl: release.html_url || GITHUB_RELEASES_PAGE
+    };
+    if (available) {
+      latestUpdateInfo = info;
+      if (notifyRenderer && widgetWin && !widgetWin.isDestroyed()) {
+        widgetWin.webContents.send('update_available', info);
+      }
+    }
+    return info;
+  } catch (e) {
+    return { ok: false, currentVersion, available: false };
+  }
+}
+
 let lastAdaptiveCache = { url: null, color: null };
 
 async function extractDominantColor(artworkUrl) {
@@ -588,13 +879,69 @@ async function extractDominantColor(artworkUrl) {
   }
 }
 
+function normalizeTextForCompare(str) {
+  return String(str || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+}
+
+function normalizeSxmMetadata(meta, channel) {
+  if (!meta || typeof meta !== 'object') return meta;
+
+  const rawTitle = (meta.title || '').trim();
+  const rawArtist = (meta.artist || '').trim();
+  if (!rawTitle && !rawArtist) return meta;
+
+  const chNames = [
+    channel && channel.name,
+    meta.detected_ch_name,
+    meta.album
+  ].map(normalizeTextForCompare).filter(Boolean);
+
+  const titleParts = rawTitle
+    ? rawTitle.split(/\s*[·•|]\s*/).map(s => s.trim()).filter(Boolean)
+    : [];
+  const hasChannelShowFormat = titleParts.length >= 2;
+  const normTitle = normalizeTextForCompare(rawTitle);
+  const titleMatchesChannel = !rawTitle || (normTitle && chNames.some(c => c === normTitle || (c.length >= 4 && normTitle.includes(c))));
+
+  // SiriusXM Web Player sets mediaSession.title to "Channel · Show" (often "Channel · Channel")
+  // and mediaSession.artist to "Artist - Song Title".
+  const artistSplitMatch = rawArtist.match(/^(.+?)\s+[-–—]\s+(.+)$/);
+  if (artistSplitMatch && (hasChannelShowFormat || titleMatchesChannel)) {
+    const parsedArtist = artistSplitMatch[1].trim();
+    const parsedTitle = artistSplitMatch[2].trim();
+    if (parsedArtist && parsedTitle) {
+      meta.title = parsedTitle;
+      meta.artist = parsedArtist;
+      return meta;
+    }
+  }
+
+  // Even when there's no "Artist - Song" (e.g., talk/sports show or station bumper),
+  // collapse redundant "Channel · Channel" or strip leading "Channel · " prefix.
+  if (hasChannelShowFormat) {
+    const firstNorm = normalizeTextForCompare(titleParts[0]);
+    const secondNorm = normalizeTextForCompare(titleParts[1]);
+    if (firstNorm && firstNorm === secondNorm) {
+      meta.title = titleParts[1];
+    } else if (firstNorm && chNames.some(c => c === firstNorm || (c.length >= 4 && firstNorm.includes(c)))) {
+      meta.title = titleParts.slice(1).join(' · ');
+    }
+  }
+
+  return meta;
+}
+
 function startMetadataPoller() {
   setInterval(async () => {
     if (!widgetWin || widgetWin.isDestroyed()) return;
 
-    // 1. If currently tuned to a Free Internet Radio stream, fetch its live JSON API metadata directly!
+    // 1. If currently tuned to a Free/Custom Internet Radio stream, fetch its live JSON API or ICY metadata directly!
     if (currentChannel && currentChannel.isDirectStream) {
-      const freeMeta = await fetchFreeRadioMetadata(currentChannel);
+      const freeMeta = await fetchDirectStreamMetadata(currentChannel, false);
       if (freeMeta) {
         if (isPlaying && freeMeta.title) {
           recordTrackHistory(freeMeta.title, freeMeta.artist, currentChannel);
@@ -626,8 +973,27 @@ function startMetadataPoller() {
           is_playing: null,
           auth_needed: false,
           detected_ch_num: null,
-          detected_ch_name: null
+          detected_ch_name: null,
+          watchdog_notice: null
         };
+
+        // 0. Stream Watchdog: dismiss SiriusXM "Are you still listening?" or playback retry modals
+        const dialogs = Array.from(document.querySelectorAll('[role="dialog"], [role="alertdialog"], [class*="modal" i], [class*="overlay" i]'));
+        for (const dlg of dialogs) {
+          const dlgText = (dlg.innerText || '').trim();
+          if (/still\\s*listening|inactive|timed\\s*out|keep\\s*listening|playback\\s*error|something\\s*went\\s*wrong/i.test(dlgText)) {
+            const btns = Array.from(dlg.querySelectorAll('button, [role="button"]'));
+            const resumeBtn = btns.find(b => {
+              const t = (b.innerText || b.getAttribute('aria-label') || '').trim();
+              return /continue|yes|keep\\s*listening|resume|try\\s*again|retry|ok/i.test(t);
+            });
+            if (resumeBtn) {
+              resumeBtn.click();
+              out.watchdog_notice = 'AUTO-RESUMED STREAM';
+              break;
+            }
+          }
+        }
 
         const url = window.location.href || '';
         if (url.includes('login') || url.includes('signin') || url.includes('auth')) {
@@ -723,6 +1089,9 @@ function startMetadataPoller() {
             meta.updated_channels = channels;
           }
         }
+
+        // Normalize SiriusXM MediaSession metadata ("Channel · Show" + "Artist - Song Title")
+        normalizeSxmMetadata(meta, currentChannel);
 
         // Keep SiriusXM player volume/mute synced with widget controls
         applySxmAudioSettings();
@@ -850,10 +1219,12 @@ function createWindows() {
   });
 
   startMetadataPoller();
+  setTimeout(() => {
+    checkForUpdates(true);
+  }, 4000);
 }
 
-// IPC Handlers
-ipcMain.handle('get_initial_state', () => {
+function getInitialStatePayload() {
   return {
     channels,
     favorites,
@@ -862,13 +1233,22 @@ ipcMain.handle('get_initial_state', () => {
     theme: currentTheme,
     widget_opacity: widgetOpacity,
     music_reactive_lights: musicReactiveLights,
+    scroll_long_titles: scrollLongTitles,
+    show_visualizer: showVisualizer,
     volume: currentVolume,
     is_muted: isMuted,
     mini_mode: isMiniMode,
     widget_scale: widgetScale,
     track_history: trackHistory,
-    launch_at_startup: getLaunchAtStartup()
+    launch_at_startup: getLaunchAtStartup(),
+    app_version: app.getVersion(),
+    update_info: latestUpdateInfo
   };
+}
+
+// IPC Handlers
+ipcMain.handle('get_initial_state', () => {
+  return getInitialStatePayload();
 });
 
 ipcMain.handle('save_theme', (_event, themeId) => {
@@ -888,9 +1268,15 @@ ipcMain.handle('save_visual_settings', (_event, settings) => {
     if (typeof settings.musicReactiveLights === 'boolean') {
       musicReactiveLights = settings.musicReactiveLights;
     }
+    if (typeof settings.scrollLongTitles === 'boolean') {
+      scrollLongTitles = settings.scrollLongTitles;
+    }
+    if (typeof settings.showVisualizer === 'boolean') {
+      showVisualizer = settings.showVisualizer;
+    }
     saveUserData();
   }
-  return { opacity: widgetOpacity, musicReactiveLights };
+  return { opacity: widgetOpacity, musicReactiveLights, scrollLongTitles, showVisualizer };
 });
 
 ipcMain.handle('preview_widget_opacity', (_event, opacity) => {
@@ -984,22 +1370,31 @@ ipcMain.handle('reorder_favorites', (_event, newOrder) => {
   return favorites;
 });
 
-ipcMain.handle('add_custom_stream', (_event, payload) => {
+ipcMain.handle('add_custom_stream', async (_event, payload) => {
   if (!payload || typeof payload !== 'object') {
     return { ok: false, error: 'Invalid stream data.' };
   }
-  const cleanName = String(payload.name || '').trim();
-  const cleanUrl = String(payload.streamUrl || '').trim();
+  let cleanName = String(payload.name || '').trim();
+  const rawUrl = String(payload.streamUrl || '').trim();
   const cleanGenre = String(payload.genre || '').trim() || 'Custom';
   const cleanColor = /^#[0-9a-fA-F]{6}$/.test(String(payload.color || ''))
     ? String(payload.color)
     : '#00d2ff';
 
+  if (!/^https?:\/\/.+/i.test(rawUrl)) {
+    return { ok: false, error: 'Stream URL must start with http:// or https://' };
+  }
+
+  const resolved = await resolveStreamPlaylistUrl(rawUrl);
+  if (!resolved.ok) {
+    return { ok: false, error: resolved.error || 'Could not resolve playlist URL.' };
+  }
+
+  if (!cleanName && resolved.resolvedTitle) {
+    cleanName = resolved.resolvedTitle;
+  }
   if (!cleanName) {
     return { ok: false, error: 'Please enter a station name.' };
-  }
-  if (!/^https?:\/\/.+/i.test(cleanUrl)) {
-    return { ok: false, error: 'Stream URL must start with http:// or https://' };
   }
 
   const existingNums = new Set(channels.map(c => String(c.number).toUpperCase()));
@@ -1014,11 +1409,12 @@ ipcMain.handle('add_custom_stream', (_event, payload) => {
     number: finalNum,
     name: cleanName,
     genre: cleanGenre,
-    desc: 'Custom Radio Stream',
+    desc: resolved.isHls ? 'Custom HLS Radio Stream' : 'Custom Radio Stream',
     color: cleanColor,
     isDirectStream: true,
     isUserCustom: true,
-    streamUrl: cleanUrl
+    isHls: !!resolved.isHls,
+    streamUrl: resolved.streamUrl
   };
 
   channels.push(newCh);
@@ -1111,7 +1507,7 @@ async function tuneToTargetChannel(target) {
 
   if (target.isDirectStream) {
     await pauseSxmBrowser();
-    fetchFreeRadioMetadata(target).then(async meta => {
+    fetchDirectStreamMetadata(target, true).then(async meta => {
       if (meta && widgetWin && !widgetWin.isDestroyed()) {
         if (meta.title) {
           recordTrackHistory(meta.title, meta.artist, target);
@@ -1288,6 +1684,121 @@ ipcMain.handle('toggle_on_top', () => {
 ipcMain.handle('close_app', () => {
   app.isQuitting = true;
   app.quit();
+});
+
+ipcMain.handle('open_external_url', async (_event, targetUrl) => {
+  const clean = String(targetUrl || '').trim();
+  if (!/^https?:\/\/.+/i.test(clean)) return { ok: false };
+  try {
+    await shell.openExternal(clean);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+});
+
+ipcMain.handle('export_settings', async () => {
+  if (!widgetWin || widgetWin.isDestroyed()) return { ok: false };
+  try {
+    const { canceled, filePath } = await dialog.showSaveDialog(widgetWin, {
+      title: 'Export SiriusXM Widget Settings',
+      defaultPath: path.join(app.getPath('documents'), 'sxm-widget-backup.json'),
+      filters: [{ name: 'JSON Backup', extensions: ['json'] }]
+    });
+    if (canceled || !filePath) return { ok: false, canceled: true };
+    const backup = {
+      ...buildUserDataPayload(),
+      app_version: app.getVersion(),
+      exported_at: new Date().toISOString()
+    };
+    fs.writeFileSync(filePath, JSON.stringify(backup, null, 2), 'utf-8');
+    return { ok: true, filePath };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+});
+
+ipcMain.handle('import_settings', async () => {
+  if (!widgetWin || widgetWin.isDestroyed()) return { ok: false };
+  try {
+    const { canceled, filePaths } = await dialog.showOpenDialog(widgetWin, {
+      title: 'Import SiriusXM Widget Settings',
+      filters: [{ name: 'JSON Backup', extensions: ['json'] }],
+      properties: ['openFile']
+    });
+    if (canceled || !filePaths || !filePaths.length) return { ok: false, canceled: true };
+
+    const raw = fs.readFileSync(filePaths[0], 'utf-8');
+    const data = JSON.parse(raw);
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      return { ok: false, error: 'Invalid backup file format.' };
+    }
+
+    const knownKeys = ['favorites', 'theme', 'widget_opacity', 'volume', 'custom_channels', 'track_history', 'widget_scale'];
+    if (!knownKeys.some(k => Object.prototype.hasOwnProperty.call(data, k))) {
+      return { ok: false, error: 'This file does not look like an SXM Widget backup.' };
+    }
+
+    if (Array.isArray(data.favorites)) {
+      favorites = data.favorites.map(String);
+    }
+    if (data.theme && typeof data.theme === 'string') {
+      currentTheme = data.theme;
+    }
+    if (typeof data.widget_opacity === 'number' && Number.isFinite(data.widget_opacity)) {
+      widgetOpacity = Math.max(0.35, Math.min(1, data.widget_opacity));
+      widgetWin.setOpacity(widgetOpacity);
+    }
+    if (typeof data.music_reactive_lights === 'boolean') {
+      musicReactiveLights = data.music_reactive_lights;
+    }
+    if (typeof data.scroll_long_titles === 'boolean') {
+      scrollLongTitles = data.scroll_long_titles;
+    }
+    if (typeof data.show_visualizer === 'boolean') {
+      showVisualizer = data.show_visualizer;
+    }
+    if (typeof data.volume === 'number' && !Number.isNaN(data.volume)) {
+      currentVolume = Math.max(0, Math.min(100, Math.round(data.volume)));
+    }
+    if (typeof data.is_muted === 'boolean') {
+      isMuted = data.is_muted;
+    }
+    if (typeof data.widget_scale === 'number' && Number.isFinite(data.widget_scale)) {
+      widgetScale = Math.max(0.75, Math.min(1.35, data.widget_scale));
+    }
+    if (Array.isArray(data.track_history)) {
+      trackHistory = data.track_history.slice(0, MAX_TRACK_HISTORY);
+    }
+
+    // Rebuild channels from built-ins + imported custom channels
+    channels = [...FREE_HOLIDAY_CHANNELS, ...DEFAULT_CHANNELS];
+    if (Array.isArray(data.custom_channels)) {
+      const existingNums = new Set(channels.map(c => String(c.number)));
+      for (const ch of data.custom_channels) {
+        if (ch && ch.number && !existingNums.has(String(ch.number))) {
+          channels.push(ch);
+          existingNums.add(String(ch.number));
+        }
+      }
+    }
+
+    if (data.last_channel) {
+      const found = channels.find(c => String(c.number) === String(data.last_channel));
+      if (found) currentChannel = found;
+    }
+
+    saveUserData();
+    await applySxmAudioSettings();
+    applyWidgetBoundsAndZoom();
+    return { ok: true, state: getInitialStatePayload() };
+  } catch (e) {
+    return { ok: false, error: 'Failed to read backup file.' };
+  }
+});
+
+ipcMain.handle('check_for_updates', async () => {
+  return checkForUpdates(true);
 });
 
 app.whenReady().then(createWindows);

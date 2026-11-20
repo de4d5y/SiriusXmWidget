@@ -25,10 +25,17 @@ contextBridge.exposeInMainWorld('sxmApi', {
   togglePlayerWindow: () => ipcRenderer.invoke('toggle_player_window'),
   toggleOnTop: () => ipcRenderer.invoke('toggle_on_top'),
   closeApp: () => ipcRenderer.invoke('close_app'),
+  openExternalUrl: (url) => ipcRenderer.invoke('open_external_url', url),
+  exportSettings: () => ipcRenderer.invoke('export_settings'),
+  importSettings: () => ipcRenderer.invoke('import_settings'),
+  checkForUpdates: () => ipcRenderer.invoke('check_for_updates'),
   onMetadataUpdate: (callback) => {
     ipcRenderer.on('metadata_update', (_event, data) => callback(data));
   },
   onHistoryUpdate: (callback) => {
     ipcRenderer.on('history_update', (_event, history) => callback(history));
+  },
+  onUpdateAvailable: (callback) => {
+    ipcRenderer.on('update_available', (_event, info) => callback(info));
   }
 });

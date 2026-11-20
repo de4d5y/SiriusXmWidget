@@ -384,13 +384,22 @@
       text-transform: uppercase;
       color: var(--text-secondary);
       flex: 1;
+      min-width: 0;
+      overflow: hidden;
       height: 100%;
+    }
+
+    #statusText {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .status-dot {
       width: 9px;
       height: 9px;
       border-radius: 50%;
+      flex-shrink: 0;
       background: var(--text-muted);
       transition: all 0.3s ease;
     }
@@ -956,6 +965,8 @@
       display: flex;
       align-items: center;
       gap: 9px;
+      min-width: 0;
+      max-width: 100%;
     }
 
     .ch-badge {
@@ -967,9 +978,13 @@
       color: var(--badge-text);
       border: 1px solid var(--badge-border);
       white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .ch-name {
+      display: block;
+      flex: 0 1 auto;
+      min-width: 0;
       font-size: 16.5px;
       font-weight: 800;
       color: var(--text-secondary);
@@ -986,6 +1001,7 @@
       font-size: 20px;
       line-height: 1;
       padding: 0 4px;
+      flex-shrink: 0;
       transition: transform 0.15s ease, color 0.15s ease;
       -webkit-app-region: no-drag;
     }
@@ -1005,6 +1021,7 @@
       align-items: center;
       gap: 7px;
       min-width: 0;
+      max-width: 100%;
     }
 
     .mini-ch-pill {
@@ -1021,6 +1038,8 @@
     }
 
     .track-title {
+      flex: 1 1 auto;
+      min-width: 0;
       font-size: 23px;
       font-weight: 800;
       color: var(--text-primary);
@@ -1032,12 +1051,44 @@
     }
 
     .track-artist {
+      min-width: 0;
+      width: 100%;
       font-size: 16.5px;
       font-weight: 600;
       color: var(--text-secondary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    /* Car-Radio Style Scrolling Marquee */
+    .marquee-host {
+      position: relative;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .marquee-host.is-marquee {
+      text-overflow: clip;
+      margin-left: -6px;
+      padding-left: 6px;
+      padding-right: 12px;
+      -webkit-mask-image: linear-gradient(to right, transparent 0px, #000 6px, #000 calc(100% - 14px), transparent 100%);
+      mask-image: linear-gradient(to right, transparent 0px, #000 6px, #000 calc(100% - 14px), transparent 100%);
+    }
+
+    .marquee-track {
+      display: inline-flex;
+      align-items: baseline;
+      white-space: nowrap;
+      will-change: transform;
+    }
+
+    .marquee-gap {
+      display: inline-block;
+      width: 48px;
+      flex-shrink: 0;
     }
 
     /* Controls Column (Transport + Volume) */
@@ -1878,6 +1929,183 @@
     body.mini-mode .keypad-hint {
       display: none;
     }
+
+    /* Update Available Pill in Top Bar */
+    .update-pill {
+      display: none;
+      align-items: center;
+      gap: 4px;
+      background: rgba(251, 191, 36, 0.2);
+      border: 1px solid rgba(251, 191, 36, 0.55);
+      color: #fde68a;
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      -webkit-app-region: no-drag;
+    }
+
+    .update-pill.visible {
+      display: inline-flex;
+    }
+
+    .update-pill:hover {
+      background: rgba(251, 191, 36, 0.34);
+      border-color: #fbbf24;
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    /* Mini Audio Visualizer Canvas */
+    .mini-visualizer-canvas {
+      position: absolute;
+      left: 22px;
+      right: 22px;
+      bottom: 2px;
+      width: calc(100% - 44px);
+      height: 18px;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.72;
+      transition: opacity 0.25s ease;
+    }
+
+    body.mini-mode .mini-visualizer-canvas {
+      left: 14px;
+      right: 14px;
+      bottom: 1px;
+      width: calc(100% - 28px);
+      height: 9px;
+      opacity: 0.65;
+    }
+
+    body.visualizer-off .mini-visualizer-canvas {
+      opacity: 0;
+    }
+
+    /* Track Artist Row + One-Click Track Lookup */
+    .track-artist-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .track-artist-row .track-artist {
+      flex: 1 1 auto;
+      width: auto;
+    }
+
+    .track-lookup-bar {
+      display: none;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+      -webkit-app-region: no-drag;
+    }
+
+    .track-lookup-bar.visible {
+      display: inline-flex;
+    }
+
+    body.mini-mode .track-lookup-bar {
+      display: none !important;
+    }
+
+    .lookup-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      color: var(--text-secondary);
+      width: 22px;
+      height: 20px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      transition: all 0.14s ease;
+    }
+
+    .lookup-btn svg {
+      width: 12px;
+      height: 12px;
+      fill: currentColor;
+    }
+
+    .lookup-btn:hover {
+      transform: translateY(-1px);
+      color: #fff;
+    }
+
+    .lookup-btn.spotify:hover {
+      background: rgba(29, 185, 84, 0.28);
+      border-color: rgba(29, 185, 84, 0.65);
+      color: #4ade80;
+    }
+
+    .lookup-btn.youtube:hover {
+      background: rgba(239, 68, 68, 0.28);
+      border-color: rgba(239, 68, 68, 0.65);
+      color: #fca5a5;
+    }
+
+    .lookup-btn.genius:hover {
+      background: rgba(251, 191, 36, 0.26);
+      border-color: rgba(251, 191, 36, 0.65);
+      color: #fde047;
+    }
+
+    /* Settings Backup & Update Utility Row */
+    .settings-utility-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding-top: 2px;
+    }
+
+    .utility-btns {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .utility-btn {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: var(--text-primary);
+      border-radius: 7px;
+      padding: 4px 9px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .utility-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .settings-feedback {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--badge-text);
+      margin-left: auto;
+      white-space: nowrap;
+    }
+
+    .settings-feedback.error {
+      color: #fca5a5;
+    }
   </style>
 </head>
 <body data-theme="christmas">
@@ -1900,9 +2128,10 @@
     <div class="top-bar">
       <div class="brand-pill">
         <span class="status-dot" id="statusDot"></span>
-        <span id="statusText">🎄 SIRIUSXM HOLIDAY EDITION</span>
+        <span id="statusText"></span>
       </div>
       <div class="top-actions">
+        <button class="update-pill" id="updateBadgeBtn" title="New update available — click to open GitHub Releases">⬆ Update</button>
         <button class="go-live-pill" id="topGoLiveBtn" title="Jump to Live Broadcast Playback">● LIVE</button>
         <button class="mini-btn" id="themeBtn" title="Themes & Startup">🎨</button>
         <button class="mini-btn" id="historyBtn" title="Recent Track History (Last 12)">🕒</button>
@@ -1923,6 +2152,10 @@
         <input class="opacity-slider" id="opacitySlider" type="range" min="35" max="100" value="100" aria-label="Widget opacity" />
         <label for="musicReactiveToggle" title="Uses real audio energy from Free Holiday Radio streams. SiriusXM web-player audio is isolated from this widget.">Music-reactive Christmas lights</label>
         <input class="reactive-toggle" id="musicReactiveToggle" type="checkbox" checked aria-label="Enable music-reactive Christmas lights" />
+        <label for="scrollTitlesToggle" title="Slowly scroll overflowing channel names, song titles, and artist names like a car radio.">Scroll long titles</label>
+        <input class="reactive-toggle" id="scrollTitlesToggle" type="checkbox" checked aria-label="Scroll long titles" />
+        <label for="visualizerToggle" title="Show subtle theme-colored audio spectrum bars along the bottom of the player.">Mini audio visualizer</label>
+        <input class="reactive-toggle" id="visualizerToggle" type="checkbox" aria-label="Show mini audio visualizer" />
       </div>
       <div class="theme-options" id="themeOptions">
         <button class="theme-chip active" data-theme="christmas">🎄 Christmas</button>
@@ -1952,6 +2185,15 @@
           <button class="toggle-switch" id="startupToggle" role="switch" aria-checked="false" title="Start SiriusXM Widget automatically when Windows starts"></button>
         </div>
       </div>
+      <div class="popover-divider"></div>
+      <div class="settings-utility-row">
+        <div class="utility-btns">
+          <button class="utility-btn" id="exportSettingsBtn" title="Export Favorites, custom streams, and settings to JSON">📤 Export Backup</button>
+          <button class="utility-btn" id="importSettingsBtn" title="Restore settings and Favorites from a backup JSON file">📥 Import Backup</button>
+          <button class="utility-btn" id="checkUpdatesBtn" title="Check GitHub Releases for a newer version">🔄 Check Updates</button>
+        </div>
+        <span class="settings-feedback" id="settingsFeedback">v1.1.0</span>
+      </div>
     </div>
 
     <!-- Recent Track History Popover -->
@@ -1967,6 +2209,7 @@
 
     <!-- Scaled-Up Main Player Deck -->
     <div class="player-deck">
+      <canvas class="mini-visualizer-canvas" id="miniVisualizer"></canvas>
       <div class="art-wrapper" id="artWrapper" title="Click to toggle Channel Drawer">
         <img id="artImage" src="" alt="Channel Art" />
         <div class="art-fallback" id="artFallback">
@@ -1983,14 +2226,27 @@
       <div class="now-playing">
         <div class="channel-row">
           <span class="ch-badge" id="chBadge">CH 71</span>
-          <span class="ch-name" id="chName">Holiday Traditions</span>
+          <span class="ch-name marquee-host" id="chName">Holiday Traditions</span>
           <button class="fav-star-btn" id="currentFavBtn" title="Favorite this channel">★</button>
         </div>
         <div class="track-title-row">
           <span class="mini-ch-pill" id="miniChPill">CH 71</span>
-          <div class="track-title" id="trackTitle">Ready to Stream</div>
+          <div class="track-title marquee-host" id="trackTitle">Ready to Stream</div>
         </div>
-        <div class="track-artist" id="trackArtist">Click Play or select a channel</div>
+        <div class="track-artist-row">
+          <div class="track-artist marquee-host" id="trackArtist">Click Play or select a channel</div>
+          <div class="track-lookup-bar" id="nowPlayingLookup">
+            <button class="lookup-btn spotify" data-service="spotify" title="Search track on Spotify">
+              <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm4.58 14.42a.75.75 0 0 1-1.03.25c-2.82-1.72-6.37-2.11-10.55-1.15a.75.75 0 1 1-.33-1.46c4.57-1.05 8.5-.6 11.66 1.33a.75.75 0 0 1 .25 1.03zm1.22-2.72a.94.94 0 0 1-1.29.31c-3.23-1.98-8.15-2.56-11.97-1.4a.94.94 0 1 1-.55-1.8c4.37-1.33 9.79-.68 13.5 1.6a.94.94 0 0 1 .31 1.29zm.11-2.83C14.04 8.57 7.64 8.36 3.94 9.48a1.12 1.12 0 1 1-.65-2.15c4.25-1.29 11.31-1.04 15.77 1.61a1.12 1.12 0 1 1-1.15 1.93z"/></svg>
+            </button>
+            <button class="lookup-btn youtube" data-service="youtube" title="Search track on YouTube">
+              <svg viewBox="0 0 24 24"><path d="M21.58 7.19a2.5 2.5 0 0 0-1.76-1.77C18.25 5 12 5 12 5s-6.25 0-7.82.42a2.5 2.5 0 0 0-1.76 1.77C2 8.77 2 12 2 12s0 3.23.42 4.81a2.5 2.5 0 0 0 1.76 1.77C5.75 19 12 19 12 19s6.25 0 7.82-.42a2.5 2.5 0 0 0 1.76-1.77C22 15.23 22 12 22 12s0-3.23-.42-4.81zM10 15.46V8.54L16 12z"/></svg>
+            </button>
+            <button class="lookup-btn genius" data-service="genius" title="Find lyrics on Genius">
+              <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="controls-column">
@@ -2073,7 +2329,7 @@
         </div>
         <div class="add-stream-grid">
           <input type="text" class="stream-input" id="customStreamName" placeholder="Station Name (e.g. Lo-Fi Beats)" />
-          <input type="url" class="stream-input" id="customStreamUrl" placeholder="Stream URL (https://...mp3 / aac)" />
+          <input type="url" class="stream-input" id="customStreamUrl" placeholder="Stream or Playlist URL (mp3, aac, .pls, .m3u, .m3u8)" />
         </div>
         <div class="add-stream-grid-2">
           <input type="text" class="stream-input" id="customStreamNum" placeholder="Code (C1)" maxlength="4" />
@@ -2101,7 +2357,7 @@
       <div class="drawer-footer">
         <span id="channelCountLabel">826 Channels</span>
         <div class="footer-actions">
-          <button class="add-stream-trigger" id="openAddStreamBtn" title="Add your own MP3/AAC radio stream">+ Add Stream</button>
+          <button class="add-stream-trigger" id="openAddStreamBtn" title="Add your own MP3/AAC/HLS or .pls/.m3u radio stream">+ Add Stream</button>
           <button class="footer-link" id="openPlayerLink">Open SXM Player Window ↗</button>
         </div>
       </div>
@@ -2117,6 +2373,7 @@
     <audio id="directAudio" preload="none" crossorigin="anonymous" style="display:none;"></audio>
   </div>
 
+  <script src="node_modules/hls.js/dist/hls.min.js"></script>
   <script>
     const state = {
       channels: [],
@@ -2132,10 +2389,16 @@
       theme: 'christmas',
       opacity: 1,
       musicReactiveLights: true,
+      scrollLongTitles: true,
+      showVisualizer: false,
       volume: 100,
       isMuted: false,
       trackHistory: [],
-      launchAtStartup: false
+      launchAtStartup: false,
+      appVersion: '1.1.0',
+      updateInfo: null,
+      currentTrackTitle: '',
+      currentTrackArtist: ''
     };
 
     const els = {
@@ -2144,12 +2407,21 @@
       statusDot: document.getElementById('statusDot'),
       statusText: document.getElementById('statusText'),
       topGoLiveBtn: document.getElementById('topGoLiveBtn'),
+      updateBadgeBtn: document.getElementById('updateBadgeBtn'),
       themeBtn: document.getElementById('themeBtn'),
       themePopover: document.getElementById('themePopover'),
       themeOptions: document.getElementById('themeOptions'),
       opacitySlider: document.getElementById('opacitySlider'),
       opacityValue: document.getElementById('opacityValue'),
       musicReactiveToggle: document.getElementById('musicReactiveToggle'),
+      scrollTitlesToggle: document.getElementById('scrollTitlesToggle'),
+      visualizerToggle: document.getElementById('visualizerToggle'),
+      exportSettingsBtn: document.getElementById('exportSettingsBtn'),
+      importSettingsBtn: document.getElementById('importSettingsBtn'),
+      checkUpdatesBtn: document.getElementById('checkUpdatesBtn'),
+      settingsFeedback: document.getElementById('settingsFeedback'),
+      miniVisualizer: document.getElementById('miniVisualizer'),
+      nowPlayingLookup: document.getElementById('nowPlayingLookup'),
       sizePills: document.getElementById('sizePills'),
       startupToggle: document.getElementById('startupToggle'),
       historyBtn: document.getElementById('historyBtn'),
@@ -2210,7 +2482,9 @@
     };
 
     // Direct-radio audio plays in this renderer, so Web Audio can safely measure its
-    // real energy. The SiriusXM player runs in a separate isolated BrowserWindow.
+    // real energy for both Christmas lights and the Mini Audio Visualizer.
+    // The SiriusXM player runs in a separate isolated BrowserWindow, so the visualizer
+    // falls back to a smooth ambient spectrum when SiriusXM is playing.
     let audioContext = null;
     let audioAnalyser = null;
     let audioSamples = null;
@@ -2220,10 +2494,39 @@
     let lastBeatAt = 0;
     let lastQuietAt = 0;
     let musicHitTimer = null;
+    const VIS_BAR_COUNT = 32;
+    const visBars = new Float32Array(VIS_BAR_COUNT);
 
-    function stopMusicAnalysis() {
-      if (musicFrame) cancelAnimationFrame(musicFrame);
-      musicFrame = null;
+    function clearVisualizerCanvas() {
+      const canvas = els.miniVisualizer;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+      visBars.fill(0);
+    }
+
+    function ensureAudioAnalyser() {
+      if (!els.directAudio || !els.directAudio.src || els.directAudio.paused) return false;
+      try {
+        if (!audioContext) audioContext = new AudioContext();
+        if (!audioSourceConnected) {
+          const source = audioContext.createMediaElementSource(els.directAudio);
+          audioAnalyser = audioContext.createAnalyser();
+          audioAnalyser.fftSize = 512;
+          audioAnalyser.smoothingTimeConstant = 0.72;
+          source.connect(audioAnalyser);
+          audioAnalyser.connect(audioContext.destination);
+          audioSamples = new Uint8Array(audioAnalyser.frequencyBinCount);
+          audioSourceConnected = true;
+        }
+        audioContext.resume().catch(() => {});
+        return true;
+      } catch (err) {
+        return false;
+      }
+    }
+
+    function stopMusicLightsOnly() {
       if (musicHitTimer) clearTimeout(musicHitTimer);
       musicHitTimer = null;
       energyAverage = 0;
@@ -2233,61 +2536,144 @@
       document.body.classList.remove('music-reactive');
     }
 
-    function startMusicAnalysis() {
-      if (!state.musicReactiveLights || state.theme !== 'christmas' || !els.directAudio.src || els.directAudio.paused) return;
-      if (musicFrame) return;
-      energyAverage = 0;
-      lastQuietAt = performance.now();
-      try {
-        if (!audioContext) audioContext = new AudioContext();
-        if (!audioSourceConnected) {
-          const source = audioContext.createMediaElementSource(els.directAudio);
-          audioAnalyser = audioContext.createAnalyser();
-          audioAnalyser.fftSize = 512;
-          audioAnalyser.smoothingTimeConstant = 0.68;
-          source.connect(audioAnalyser);
-          audioAnalyser.connect(audioContext.destination);
-          audioSamples = new Uint8Array(audioAnalyser.frequencyBinCount);
-          audioSourceConnected = true;
+    function stopMusicAnalysis() {
+      if (musicFrame) cancelAnimationFrame(musicFrame);
+      musicFrame = null;
+      stopMusicLightsOnly();
+      clearVisualizerCanvas();
+    }
+
+    function drawMiniVisualizer(now, hasRealAudio) {
+      const canvas = els.miniVisualizer;
+      if (!canvas || !state.showVisualizer) return;
+      const rect = canvas.getBoundingClientRect();
+      const targetW = Math.max(60, Math.round(rect.width));
+      const targetH = Math.max(8, Math.round(rect.height));
+      if (canvas.width !== targetW || canvas.height !== targetH) {
+        canvas.width = targetW;
+        canvas.height = targetH;
+      }
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.clearRect(0, 0, targetW, targetH);
+
+      const cs = getComputedStyle(document.body);
+      const accent = (cs.getPropertyValue('--accent') || '#00d2ff').trim();
+      const accent2 = (cs.getPropertyValue('--accent-secondary') || accent).trim();
+      const grad = ctx.createLinearGradient(0, targetH, targetW, 0);
+      grad.addColorStop(0, accent);
+      grad.addColorStop(1, accent2);
+      ctx.fillStyle = grad;
+
+      const gap = 3;
+      const barW = Math.max(2, (targetW - gap * (VIS_BAR_COUNT - 1)) / VIS_BAR_COUNT);
+      const t = now * 0.004;
+
+      for (let i = 0; i < VIS_BAR_COUNT; i++) {
+        let targetVal = 0;
+        if (hasRealAudio && audioSamples) {
+          const binStart = Math.floor(1 + (i / VIS_BAR_COUNT) * (audioSamples.length * 0.45));
+          const binEnd = Math.max(binStart + 1, Math.floor(1 + ((i + 1) / VIS_BAR_COUNT) * (audioSamples.length * 0.45)));
+          let sum = 0;
+          for (let b = binStart; b < binEnd && b < audioSamples.length; b++) {
+            sum += audioSamples[b];
+          }
+          targetVal = (sum / Math.max(1, binEnd - binStart)) / 255;
+        } else if (state.isPlaying) {
+          // Smooth organic spectrum fallback for isolated SiriusXM audio
+          const centerWeight = 1 - Math.abs((i / (VIS_BAR_COUNT - 1)) * 2 - 1) * 0.42;
+          const wave =
+            0.34 +
+            0.24 * Math.sin(t * 1.4 + i * 0.55) +
+            0.18 * Math.sin(t * 2.3 - i * 0.85) +
+            0.14 * Math.cos(t * 3.1 + i * 1.15);
+          targetVal = Math.max(0.08, Math.min(0.92, wave * centerWeight));
         }
-        audioContext.resume().catch(() => {});
-      } catch (err) {
-        // Streams without CORS permission remain playable but cannot be sampled.
-        console.warn('Music-reactive lights unavailable for this stream:', err.message);
+
+        const prev = visBars[i];
+        visBars[i] = targetVal > prev ? prev + (targetVal - prev) * 0.42 : prev * 0.86;
+        const h = Math.max(2, Math.round(visBars[i] * targetH));
+        const x = Math.round(i * (barW + gap));
+        const y = targetH - h;
+        const r = Math.min(2, barW / 2, h / 2);
+
+        ctx.beginPath();
+        ctx.roundRect(x, y, barW, h, [r, r, 0, 0]);
+        ctx.fill();
+      }
+    }
+
+    function startMusicAnalysis() {
+      const wantsLights = state.musicReactiveLights && state.theme === 'christmas' && !!(els.directAudio.src && !els.directAudio.paused);
+      const wantsVis = state.showVisualizer && state.isPlaying;
+      if (!wantsLights && !wantsVis) {
+        stopMusicAnalysis();
         return;
       }
 
-      document.body.classList.add('music-reactive');
+      if (els.directAudio.src && !els.directAudio.paused) {
+        ensureAudioAnalyser();
+      }
+
+      if (musicFrame) return;
+      energyAverage = 0;
+      lastQuietAt = performance.now();
+
       const sample = (now) => {
-        if (!state.musicReactiveLights || state.theme !== 'christmas' || els.directAudio.paused || !audioAnalyser) {
+        const directActive = !!(els.directAudio.src && !els.directAudio.paused);
+        const lightsActive = state.musicReactiveLights && state.theme === 'christmas' && directActive && !!audioAnalyser;
+        const visActive = state.showVisualizer && state.isPlaying;
+
+        if (!lightsActive && !visActive) {
           stopMusicAnalysis();
           return;
         }
-        audioAnalyser.getByteFrequencyData(audioSamples);
-        // Bass/lower-mid energy gives a useful beat signal without reacting to hiss.
-        const bins = Math.max(2, Math.floor(audioSamples.length * 0.28));
-        let total = 0;
-        for (let i = 1; i < bins; i++) total += audioSamples[i];
-        const energy = total / ((bins - 1) * 255);
-        const baseline = energyAverage || energy;
-        const rise = Math.max(0, energy - baseline);
-        energyAverage = baseline * 0.92 + energy * 0.08;
 
-        // A transition out of near-silence is a song boundary, not a beat.
-        if (energy < 0.045) lastQuietAt = now;
-        const level = Math.max(0, Math.min(1, rise / 0.12));
-        const isBeat = energy > 0.09 && rise > Math.max(0.025, baseline * 0.24)
-          && now - lastQuietAt > 1100 && now - lastBeatAt > 180;
-        document.body.style.setProperty('--music-level', level.toFixed(3));
-        if (isBeat) {
-          lastBeatAt = now;
-          document.body.classList.add('music-hit');
-          if (musicHitTimer) clearTimeout(musicHitTimer);
-          musicHitTimer = setTimeout(() => {
-            document.body.classList.remove('music-hit');
-            musicHitTimer = null;
-          }, 100);
+        let hasRealSignal = false;
+        if (directActive && audioAnalyser && audioSamples) {
+          audioAnalyser.getByteFrequencyData(audioSamples);
+          for (let i = 1; i < Math.min(48, audioSamples.length); i++) {
+            if (audioSamples[i] > 2) {
+              hasRealSignal = true;
+              break;
+            }
+          }
         }
+
+        if (lightsActive && hasRealSignal) {
+          document.body.classList.add('music-reactive');
+          const bins = Math.max(2, Math.floor(audioSamples.length * 0.28));
+          let total = 0;
+          for (let i = 1; i < bins; i++) total += audioSamples[i];
+          const energy = total / ((bins - 1) * 255);
+          const baseline = energyAverage || energy;
+          const rise = Math.max(0, energy - baseline);
+          energyAverage = baseline * 0.92 + energy * 0.08;
+
+          if (energy < 0.045) lastQuietAt = now;
+          const level = Math.max(0, Math.min(1, rise / 0.12));
+          const isBeat = energy > 0.09 && rise > Math.max(0.025, baseline * 0.24)
+            && now - lastQuietAt > 1100 && now - lastBeatAt > 180;
+          document.body.style.setProperty('--music-level', level.toFixed(3));
+          if (isBeat) {
+            lastBeatAt = now;
+            document.body.classList.add('music-hit');
+            if (musicHitTimer) clearTimeout(musicHitTimer);
+            musicHitTimer = setTimeout(() => {
+              document.body.classList.remove('music-hit');
+              musicHitTimer = null;
+            }, 100);
+          }
+        } else {
+          stopMusicLightsOnly();
+        }
+
+        if (visActive) {
+          drawMiniVisualizer(now, hasRealSignal);
+        } else {
+          clearVisualizerCanvas();
+        }
+
         musicFrame = requestAnimationFrame(sample);
       };
       musicFrame = requestAnimationFrame(sample);
@@ -2337,6 +2723,109 @@
         .replace(/"/g, '&quot;');
     }
 
+    // Car-Radio Style Scrolling Marquee for Overflowing Titles
+    const MARQUEE_SPEED_PX_PER_SEC = 28;
+    const MARQUEE_PAUSE_SEC = 4.2;
+    const MARQUEE_HOVER_PAUSE_SEC = 0.5;
+    const MARQUEE_GAP_PX = 48;
+
+    function stopMarquee(el) {
+      if (!el) return;
+      if (el._marqueeAnim) {
+        try { el._marqueeAnim.cancel(); } catch (_) {}
+        el._marqueeAnim = null;
+      }
+      el.classList.remove('is-marquee');
+      if (typeof el.dataset.marqueeText === 'string') {
+        el.textContent = el.dataset.marqueeText;
+      }
+    }
+
+    function applyMarquee(el, options = {}) {
+      if (!el) return;
+      const pauseSec = typeof options.pauseSec === 'number' ? options.pauseSec : MARQUEE_PAUSE_SEC;
+      const text = typeof el.dataset.marqueeText === 'string'
+        ? el.dataset.marqueeText
+        : (el.textContent || '');
+      el.dataset.marqueeText = text;
+      el.title = text;
+
+      // Reset to plain text first so scrollWidth / clientWidth measure cleanly
+      if (el._marqueeAnim) {
+        try { el._marqueeAnim.cancel(); } catch (_) {}
+        el._marqueeAnim = null;
+      }
+      el.classList.remove('is-marquee');
+      el.textContent = text;
+
+      if (!state.scrollLongTitles || !text || el.clientWidth <= 0) return;
+
+      const overflow = el.scrollWidth - el.clientWidth;
+      if (overflow <= 2) return;
+
+      const track = document.createElement('span');
+      track.className = 'marquee-track';
+
+      const primary = document.createElement('span');
+      primary.className = 'marquee-text';
+      primary.textContent = text;
+
+      const gap = document.createElement('span');
+      gap.className = 'marquee-gap';
+      gap.setAttribute('aria-hidden', 'true');
+
+      const copy = document.createElement('span');
+      copy.className = 'marquee-copy';
+      copy.setAttribute('aria-hidden', 'true');
+      copy.textContent = text;
+
+      track.append(primary, gap, copy);
+      el.textContent = '';
+      el.appendChild(track);
+      el.classList.add('is-marquee');
+
+      const measuredDist = copy.offsetLeft - primary.offsetLeft;
+      const distance = measuredDist > 0
+        ? measuredDist
+        : Math.ceil(primary.getBoundingClientRect().width + MARQUEE_GAP_PX);
+
+      const scrollSec = Math.max(1.5, distance / MARQUEE_SPEED_PX_PER_SEC);
+      const totalSec = pauseSec + scrollSec;
+      const pauseOffset = Math.min(0.85, pauseSec / totalSec);
+
+      el._marqueeAnim = track.animate(
+        [
+          { transform: 'translate3d(0, 0, 0)', offset: 0 },
+          { transform: 'translate3d(0, 0, 0)', offset: pauseOffset },
+          { transform: `translate3d(-${distance}px, 0, 0)`, offset: 1 }
+        ],
+        {
+          duration: totalSec * 1000,
+          iterations: Infinity,
+          easing: 'linear'
+        }
+      );
+    }
+
+    function setMarqueeText(el, text, force = false) {
+      if (!el) return;
+      const nextText = String(text ?? '');
+      if (!force && el.dataset.marqueeText === nextText) return;
+      el.dataset.marqueeText = nextText;
+      applyMarquee(el);
+    }
+
+    let marqueeRefreshRaf = null;
+    function refreshNowPlayingMarquees() {
+      if (marqueeRefreshRaf) cancelAnimationFrame(marqueeRefreshRaf);
+      marqueeRefreshRaf = requestAnimationFrame(() => {
+        marqueeRefreshRaf = null;
+        applyMarquee(els.chName);
+        applyMarquee(els.trackTitle);
+        applyMarquee(els.trackArtist);
+      });
+    }
+
     function formatRelativeTime(ts) {
       if (!ts) return '';
       const diffSec = Math.max(0, Math.floor((Date.now() - ts) / 1000));
@@ -2346,6 +2835,34 @@
       const diffHr = Math.floor(diffMin / 60);
       if (diffHr < 24) return `${diffHr}h ago`;
       return `${Math.floor(diffHr / 24)}d ago`;
+    }
+
+    function isLookupableTrack(title) {
+      const clean = String(title || '').trim().toLowerCase();
+      if (!clean) return false;
+      const ignored = ['ready to stream', 'stream stopped', 'loading...', 'siriusxm', 'reconnecting...'];
+      return !ignored.includes(clean);
+    }
+
+    function openTrackLookup(service, title, artist) {
+      if (!isLookupableTrack(title)) return;
+      const query = [artist, title].filter(Boolean).join(' ').trim();
+      if (!query) return;
+      const encoded = encodeURIComponent(query);
+      let url = '';
+      if (service === 'spotify') {
+        url = `https://open.spotify.com/search/${encoded}`;
+      } else if (service === 'youtube') {
+        url = `https://www.youtube.com/results?search_query=${encoded}`;
+      } else if (service === 'genius') {
+        url = `https://genius.com/search?q=${encoded}`;
+      }
+      if (url) window.sxmApi.openExternalUrl(url);
+    }
+
+    function updateNowPlayingLookupVisibility() {
+      if (!els.nowPlayingLookup) return;
+      els.nowPlayingLookup.classList.toggle('visible', isLookupableTrack(state.currentTrackTitle));
     }
 
     function renderTrackHistory() {
@@ -2367,6 +2884,9 @@
             </div>
             <div class="history-meta">
               <span class="history-time">${formatRelativeTime(item.timestamp)}</span>
+              <button class="lookup-btn spotify history-lookup-btn" data-service="spotify" data-idx="${idx}" title="Search on Spotify"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm4.58 14.42a.75.75 0 0 1-1.03.25c-2.82-1.72-6.37-2.11-10.55-1.15a.75.75 0 1 1-.33-1.46c4.57-1.05 8.5-.6 11.66 1.33a.75.75 0 0 1 .25 1.03zm1.22-2.72a.94.94 0 0 1-1.29.31c-3.23-1.98-8.15-2.56-11.97-1.4a.94.94 0 1 1-.55-1.8c4.37-1.33 9.79-.68 13.5 1.6a.94.94 0 0 1 .31 1.29zm.11-2.83C14.04 8.57 7.64 8.36 3.94 9.48a1.12 1.12 0 1 1-.65-2.15c4.25-1.29 11.31-1.04 15.77 1.61a1.12 1.12 0 1 1-1.15 1.93z"/></svg></button>
+              <button class="lookup-btn youtube history-lookup-btn" data-service="youtube" data-idx="${idx}" title="Search on YouTube"><svg viewBox="0 0 24 24"><path d="M21.58 7.19a2.5 2.5 0 0 0-1.76-1.77C18.25 5 12 5 12 5s-6.25 0-7.82.42a2.5 2.5 0 0 0-1.76 1.77C2 8.77 2 12 2 12s0 3.23.42 4.81a2.5 2.5 0 0 0 1.76 1.77C5.75 19 12 19 12 19s6.25 0 7.82-.42a2.5 2.5 0 0 0 1.76-1.77C22 15.23 22 12 22 12s0-3.23-.42-4.81zM10 15.46V8.54L16 12z"/></svg></button>
+              <button class="lookup-btn genius history-lookup-btn" data-service="genius" data-idx="${idx}" title="Find Lyrics on Genius"><svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg></button>
               <button class="history-copy-btn" data-idx="${idx}" title="Copy Track Info">Copy</button>
             </div>
           </div>
@@ -2387,6 +2907,7 @@
         els.historyPopover.classList.remove('open');
         els.historyBtn.classList.remove('active');
       }
+      refreshNowPlayingMarquees();
     }
 
     function applyStartupToggleUI(enabled) {
@@ -2401,22 +2922,136 @@
         const s = Number(btn.dataset.scale);
         btn.classList.toggle('active', Math.abs(s - state.widgetScale) < 0.03);
       });
+      refreshNowPlayingMarquees();
     }
 
-    function playOrStopDirectStream(ch, shouldPlay) {
+    // Direct Stream Playback (MP3/AAC/OGG + HLS .m3u8 via hls.js) & Auto-Reconnect Watchdog
+    let hlsInstance = null;
+    let reconnectTimer = null;
+    let reconnectAttempts = 0;
+    let activeDirectChannel = null;
+    let lastDirectProgressAt = 0;
+    let lastDirectAudioTime = -1;
+    const RECONNECT_DELAYS_MS = [2000, 4000, 8000, 15000, 30000];
+
+    function clearDirectReconnect() {
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+      reconnectAttempts = 0;
+    }
+
+    function destroyHlsInstance() {
+      if (hlsInstance) {
+        try { hlsInstance.destroy(); } catch (_) {}
+        hlsInstance = null;
+      }
+    }
+
+    function scheduleDirectReconnect(reason) {
+      if (!state.isPlaying || !activeDirectChannel || !activeDirectChannel.isDirectStream) return;
+      if (reconnectTimer) return;
+      if (reconnectAttempts >= RECONNECT_DELAYS_MS.length) {
+        els.statusText.textContent = 'STREAM OFFLINE — CLICK ● LIVE';
+        return;
+      }
+      const delay = RECONNECT_DELAYS_MS[reconnectAttempts];
+      reconnectAttempts += 1;
+      els.statusText.textContent = `↻ RECONNECTING (${reconnectAttempts}/${RECONNECT_DELAYS_MS.length})...`;
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        if (!state.isPlaying || !activeDirectChannel || !activeDirectChannel.isDirectStream) return;
+        playOrStopDirectStream(activeDirectChannel, true, true);
+      }, delay);
+    }
+
+    function playOrStopDirectStream(ch, shouldPlay, isReconnect = false) {
       if (!els.directAudio) return;
+      if (!isReconnect) clearDirectReconnect();
+
       if (!ch || !ch.isDirectStream || !shouldPlay) {
+        activeDirectChannel = null;
+        destroyHlsInstance();
         els.directAudio.pause();
         els.directAudio.removeAttribute('src');
         els.directAudio.load();
-        stopMusicAnalysis();
+        if (!state.isPlaying) stopMusicAnalysis();
         return;
       }
-      if (els.directAudio.src !== ch.streamUrl) {
-        els.directAudio.src = ch.streamUrl;
+
+      activeDirectChannel = ch;
+      lastDirectProgressAt = Date.now();
+      lastDirectAudioTime = -1;
+
+      const streamUrl = ch.streamUrl;
+      const useHls = (ch.isHls || /\.m3u8(\?|$)/i.test(streamUrl)) && typeof window.Hls !== 'undefined' && window.Hls.isSupported();
+
+      destroyHlsInstance();
+
+      if (useHls) {
+        els.directAudio.removeAttribute('src');
+        hlsInstance = new window.Hls({ enableWorker: true, lowLatencyMode: true });
+        hlsInstance.loadSource(streamUrl);
+        hlsInstance.attachMedia(els.directAudio);
+        hlsInstance.on(window.Hls.Events.MANIFEST_PARSED, () => {
+          els.directAudio.play().then(startMusicAnalysis).catch(() => {});
+        });
+        hlsInstance.on(window.Hls.Events.ERROR, (_ev, data) => {
+          if (data && data.fatal) {
+            scheduleDirectReconnect('hls_fatal');
+          }
+        });
+      } else {
+        if (isReconnect || els.directAudio.src !== streamUrl) {
+          els.directAudio.src = streamUrl;
+          els.directAudio.load();
+        }
+        els.directAudio.play().then(startMusicAnalysis).catch(err => {
+          console.warn('Direct stream play error:', err);
+          scheduleDirectReconnect('play_error');
+        });
       }
-      els.directAudio.play().then(startMusicAnalysis).catch(err => console.warn('Direct stream play error:', err));
     }
+
+    // Watchdog listeners for direct streams
+    els.directAudio.addEventListener('playing', () => {
+      if (reconnectAttempts > 0) {
+        els.statusText.textContent = getHeaderTitle(true);
+      }
+      clearDirectReconnect();
+      lastDirectProgressAt = Date.now();
+      startMusicAnalysis();
+    });
+
+    els.directAudio.addEventListener('timeupdate', () => {
+      const ct = els.directAudio.currentTime;
+      if (ct !== lastDirectAudioTime) {
+        lastDirectAudioTime = ct;
+        lastDirectProgressAt = Date.now();
+      }
+    });
+
+    els.directAudio.addEventListener('error', () => {
+      if (state.isPlaying && activeDirectChannel) {
+        scheduleDirectReconnect('audio_error');
+      }
+    });
+
+    els.directAudio.addEventListener('ended', () => {
+      if (state.isPlaying && activeDirectChannel) {
+        scheduleDirectReconnect('audio_ended');
+      }
+    });
+
+    setInterval(() => {
+      if (!state.isPlaying || !activeDirectChannel || !activeDirectChannel.isDirectStream) return;
+      if (reconnectTimer) return;
+      const stalledForMs = Date.now() - lastDirectProgressAt;
+      if (stalledForMs > 12000 && (els.directAudio.readyState < 3 || els.directAudio.paused)) {
+        scheduleDirectReconnect('stalled');
+      }
+    }, 5000);
 
     // Subtle Snowfall Animation for Christmas & Blizzard Themes
     function initSnowfall() {
@@ -2512,22 +3147,13 @@
     }
 
     function getHeaderTitle(playing) {
-      if (state.theme === 'christmas' || state.theme === 'blizzard') {
-        return playing ? '🎄 LIVE STREAMING' : '🎄 SIRIUSXM HOLIDAY EDITION';
-      }
-      if (state.theme === 'thanksgiving') {
-        return playing ? '🦃 LIVE STREAMING' : '🦃 SIRIUSXM THANKSGIVING EDITION';
-      }
-      if (state.theme === 'pumpkin' || state.theme === 'autumn') {
-        return playing ? '🍂 LIVE STREAMING' : '🍂 SIRIUSXM AUTUMN EDITION';
-      }
-      if (state.theme === 'nyquil') {
-        return playing ? '🧪 LIVE STREAMING' : '🧪 SIRIUSXM NIGHTTIME EDITION';
-      }
-      if (state.theme === 'adaptive') {
-        return playing ? '🌈 LIVE STREAMING' : '🌈 SIRIUSXM ADAPTIVE EDITION';
-      }
-      return playing ? 'LIVE STREAMING' : 'SIRIUSXM DESKTOP WIDGET';
+      if (!playing) return '';
+      if (state.theme === 'christmas' || state.theme === 'blizzard') return '🎄 LIVE STREAMING';
+      if (state.theme === 'thanksgiving') return '🦃 LIVE STREAMING';
+      if (state.theme === 'pumpkin' || state.theme === 'autumn') return '🍂 LIVE STREAMING';
+      if (state.theme === 'nyquil') return '🧪 LIVE STREAMING';
+      if (state.theme === 'adaptive') return '🌈 LIVE STREAMING';
+      return 'LIVE STREAMING';
     }
 
     const ADAPTIVE_VARS = [
@@ -2604,7 +3230,7 @@
         clearAdaptiveInlineVars();
       }
       els.statusText.textContent = getHeaderTitle(state.isPlaying);
-      if (state.theme === 'christmas' && state.currentChannel?.isDirectStream && state.isPlaying) startMusicAnalysis();
+      if (state.isPlaying) startMusicAnalysis();
       else stopMusicAnalysis();
     }
 
@@ -2632,12 +3258,17 @@
       els.opacitySlider.value = percent;
       els.opacityValue.textContent = `${percent}%`;
       els.musicReactiveToggle.checked = state.musicReactiveLights;
+      els.scrollTitlesToggle.checked = state.scrollLongTitles;
+      els.visualizerToggle.checked = state.showVisualizer;
+      document.body.classList.toggle('visualizer-off', !state.showVisualizer);
     }
 
     function saveVisualSettings() {
       return window.sxmApi.saveVisualSettings({
         opacity: state.opacity,
-        musicReactiveLights: state.musicReactiveLights
+        musicReactiveLights: state.musicReactiveLights,
+        scrollLongTitles: state.scrollLongTitles,
+        showVisualizer: state.showVisualizer
       });
     }
 
@@ -2656,6 +3287,129 @@
       if (state.musicReactiveLights) startMusicAnalysis();
       else stopMusicAnalysis();
       saveVisualSettings();
+    });
+
+    els.scrollTitlesToggle.addEventListener('change', () => {
+      state.scrollLongTitles = els.scrollTitlesToggle.checked;
+      refreshNowPlayingMarquees();
+      if (!state.scrollLongTitles && hoveredChannelItem) {
+        stopMarquee(hoveredChannelItem.querySelector('.ch-item-title'));
+        stopMarquee(hoveredChannelItem.querySelector('.ch-item-sub'));
+      }
+      saveVisualSettings();
+    });
+
+    els.visualizerToggle.addEventListener('change', () => {
+      state.showVisualizer = els.visualizerToggle.checked;
+      document.body.classList.toggle('visualizer-off', !state.showVisualizer);
+      if (state.showVisualizer && state.isPlaying) startMusicAnalysis();
+      else if (!state.showVisualizer) clearVisualizerCanvas();
+      saveVisualSettings();
+    });
+
+    let settingsFeedbackTimer = null;
+    function setSettingsFeedback(msg, isError = false, autoResetMs = 3500) {
+      if (!els.settingsFeedback) return;
+      if (settingsFeedbackTimer) clearTimeout(settingsFeedbackTimer);
+      els.settingsFeedback.textContent = msg;
+      els.settingsFeedback.classList.toggle('error', !!isError);
+      if (autoResetMs > 0) {
+        settingsFeedbackTimer = setTimeout(() => {
+          els.settingsFeedback.classList.remove('error');
+          els.settingsFeedback.textContent = state.updateInfo && state.updateInfo.available
+            ? `v${state.appVersion} • ⬆ v${state.updateInfo.latestVersion}`
+            : `v${state.appVersion}`;
+        }, autoResetMs);
+      }
+    }
+
+    function applyUpdateInfo(info) {
+      if (!info) return;
+      state.updateInfo = info;
+      if (info.available && info.latestVersion) {
+        els.updateBadgeBtn.textContent = `⬆ v${info.latestVersion}`;
+        els.updateBadgeBtn.title = `Update available: v${info.latestVersion} (click to open Releases)`;
+        els.updateBadgeBtn.classList.add('visible');
+        if (els.settingsFeedback) {
+          els.settingsFeedback.textContent = `v${state.appVersion} • ⬆ v${info.latestVersion}`;
+        }
+      } else {
+        els.updateBadgeBtn.classList.remove('visible');
+      }
+    }
+
+    function applyFullState(init) {
+      if (!init) return;
+      state.channels = init.channels || [];
+      state.favorites = init.favorites || [];
+      state.currentChannel = init.current_channel || state.channels[0];
+      state.opacity = typeof init.widget_opacity === 'number' ? init.widget_opacity : 1;
+      state.musicReactiveLights = init.music_reactive_lights !== false;
+      state.scrollLongTitles = init.scroll_long_titles !== false;
+      state.showVisualizer = !!init.show_visualizer;
+      state.volume = typeof init.volume === 'number' ? init.volume : 100;
+      state.isMuted = !!init.is_muted;
+      state.trackHistory = Array.isArray(init.track_history) ? init.track_history : [];
+      state.appVersion = init.app_version || state.appVersion || '1.1.0';
+      renderVisualSettings();
+      applyTheme(init.theme || 'christmas');
+      applyVolumeUI();
+      applyMiniModeUI(!!init.mini_mode);
+      applyWidgetScaleUI(typeof init.widget_scale === 'number' ? init.widget_scale : 1);
+      applyStartupToggleUI(!!init.launch_at_startup);
+      updateCurrentChannelUI(state.currentChannel);
+      renderTrackHistory();
+      refreshNowPlayingMarquees();
+      if (init.update_info) {
+        applyUpdateInfo(init.update_info);
+      } else if (els.settingsFeedback) {
+        els.settingsFeedback.textContent = `v${state.appVersion}`;
+      }
+    }
+
+    els.exportSettingsBtn.addEventListener('click', async () => {
+      const res = await window.sxmApi.exportSettings();
+      if (res && res.ok) {
+        setSettingsFeedback('✓ Backup exported!', false);
+      } else if (res && !res.canceled) {
+        setSettingsFeedback(res.error || 'Export failed', true);
+      }
+    });
+
+    els.importSettingsBtn.addEventListener('click', async () => {
+      const res = await window.sxmApi.importSettings();
+      if (res && res.ok && res.state) {
+        applyFullState(res.state);
+        setSettingsFeedback('✓ Backup restored!', false);
+      } else if (res && !res.canceled) {
+        setSettingsFeedback(res.error || 'Import failed', true);
+      }
+    });
+
+    els.checkUpdatesBtn.addEventListener('click', async () => {
+      setSettingsFeedback('Checking...', false, 0);
+      const info = await window.sxmApi.checkForUpdates();
+      if (info && info.ok) {
+        applyUpdateInfo(info);
+        if (info.available) {
+          setSettingsFeedback(`⬆ v${info.latestVersion} available!`, false, 5000);
+        } else {
+          setSettingsFeedback(`✓ Up to date (v${info.currentVersion})`, false, 4000);
+        }
+      } else {
+        setSettingsFeedback('Could not check updates', true, 3500);
+      }
+    });
+
+    els.updateBadgeBtn.addEventListener('click', () => {
+      const url = (state.updateInfo && state.updateInfo.releaseUrl) || 'https://github.com/de4d5y/SiriusXmWidget/releases';
+      window.sxmApi.openExternalUrl(url);
+    });
+
+    els.nowPlayingLookup.addEventListener('click', (e) => {
+      const btn = e.target.closest('.lookup-btn');
+      if (!btn) return;
+      openTrackLookup(btn.dataset.service, state.currentTrackTitle, state.currentTrackArtist);
     });
 
     els.startupToggle.addEventListener('click', async () => {
@@ -2690,6 +3444,16 @@
     });
 
     els.historyList.addEventListener('click', async (e) => {
+      const lookupBtn = e.target.closest('.history-lookup-btn');
+      if (lookupBtn) {
+        const idx = Number(lookupBtn.dataset.idx);
+        const item = state.trackHistory[idx];
+        if (item) {
+          openTrackLookup(lookupBtn.dataset.service, item.title, item.artist);
+        }
+        return;
+      }
+
       const copyBtn = e.target.closest('.history-copy-btn');
       if (!copyBtn) return;
       const idx = Number(copyBtn.dataset.idx);
@@ -2751,10 +3515,12 @@
         els.playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
         els.eqBars.classList.add('active');
         els.statusDot.className = 'status-dot playing';
+        startMusicAnalysis();
       } else {
         els.playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
         els.eqBars.classList.remove('active');
         els.statusDot.className = 'status-dot';
+        stopMusicAnalysis();
       }
       els.statusText.textContent = getHeaderTitle(playing);
     }
@@ -2763,9 +3529,13 @@
       if (!ch) return;
       state.currentChannel = ch;
       const badgeLabel = ch.isDirectStream ? `📻 ${ch.number}` : `CH ${ch.number}`;
+      const badgeChanged = els.chBadge.textContent !== badgeLabel;
       els.chBadge.textContent = badgeLabel;
       els.miniChPill.textContent = badgeLabel;
-      els.chName.textContent = ch.name;
+      setMarqueeText(els.chName, ch.name, badgeChanged);
+      if (badgeChanged && state.miniMode) {
+        applyMarquee(els.trackTitle);
+      }
       els.artChNum.textContent = ch.number;
 
       const color = ch.color || '#ef4444';
@@ -2842,8 +3612,8 @@
               ${dragHandle}
               <div class="ch-item-swatch" style="background: ${color}">${escapeHtml(ch.number)}</div>
               <div class="ch-item-info">
-                <div class="ch-item-title">${escapeHtml(ch.name)}</div>
-                <div class="ch-item-sub">${escapeHtml(subText)}</div>
+                <div class="ch-item-title marquee-host">${escapeHtml(ch.name)}</div>
+                <div class="ch-item-sub marquee-host">${escapeHtml(subText)}</div>
               </div>
             </div>
             <div class="ch-item-right">
@@ -2976,6 +3746,29 @@
       }
     });
 
+    // Hover Marquee for Overflowing Channel Drawer Items
+    let hoveredChannelItem = null;
+    els.channelList.addEventListener('mouseover', (e) => {
+      const item = e.target.closest('.channel-item');
+      if (item === hoveredChannelItem) return;
+      if (hoveredChannelItem) {
+        stopMarquee(hoveredChannelItem.querySelector('.ch-item-title'));
+        stopMarquee(hoveredChannelItem.querySelector('.ch-item-sub'));
+      }
+      hoveredChannelItem = item || null;
+      if (hoveredChannelItem) {
+        applyMarquee(hoveredChannelItem.querySelector('.ch-item-title'), { pauseSec: MARQUEE_HOVER_PAUSE_SEC });
+        applyMarquee(hoveredChannelItem.querySelector('.ch-item-sub'), { pauseSec: MARQUEE_HOVER_PAUSE_SEC });
+      }
+    });
+
+    els.channelList.addEventListener('mouseleave', () => {
+      if (!hoveredChannelItem) return;
+      stopMarquee(hoveredChannelItem.querySelector('.ch-item-title'));
+      stopMarquee(hoveredChannelItem.querySelector('.ch-item-sub'));
+      hoveredChannelItem = null;
+    });
+
     // Add Custom Radio Stream Panel
     let selectedCustomColor = '#00d2ff';
 
@@ -3005,13 +3798,22 @@
 
     async function handleSaveCustomStream() {
       els.customStreamError.textContent = '';
-      const res = await window.sxmApi.addCustomStream({
-        name: els.customStreamName.value,
-        streamUrl: els.customStreamUrl.value,
-        number: els.customStreamNum.value,
-        genre: els.customStreamGenre.value,
-        color: selectedCustomColor
-      });
+      const origLabel = els.saveAddStreamBtn.textContent;
+      els.saveAddStreamBtn.disabled = true;
+      els.saveAddStreamBtn.textContent = 'Resolving...';
+      let res = null;
+      try {
+        res = await window.sxmApi.addCustomStream({
+          name: els.customStreamName.value,
+          streamUrl: els.customStreamUrl.value,
+          number: els.customStreamNum.value,
+          genre: els.customStreamGenre.value,
+          color: selectedCustomColor
+        });
+      } finally {
+        els.saveAddStreamBtn.disabled = false;
+        els.saveAddStreamBtn.textContent = origLabel;
+      }
 
       if (!res || !res.ok) {
         els.customStreamError.textContent = (res && res.error) || 'Could not add stream.';
@@ -3195,9 +3997,12 @@
     els.stopBtn.addEventListener('click', async () => {
       await window.sxmApi.stopStream();
       state.isPlaying = false;
+      state.currentTrackTitle = '';
+      state.currentTrackArtist = '';
+      updateNowPlayingLookupVisibility();
       playOrStopDirectStream(state.currentChannel, false);
       updatePlayIcon(false);
-      els.trackTitle.textContent = 'Stream Stopped';
+      setMarqueeText(els.trackTitle, 'Stream Stopped');
     });
 
     els.prevBtn.addEventListener('click', async () => {
@@ -3236,9 +4041,7 @@
       updatePlayIcon(true);
       setTimeout(() => {
         if (state.isPlaying) {
-          els.statusText.textContent = (state.theme === 'christmas' || state.theme === 'blizzard')
-            ? '🎄 LIVE STREAMING'
-            : 'LIVE STREAMING';
+          els.statusText.textContent = getHeaderTitle(true);
         }
       }, 1200);
     }
@@ -3287,14 +4090,25 @@
         updateCurrentChannelUI(meta.synced_channel);
       }
       if (meta.title) {
-        els.trackTitle.textContent = meta.title;
+        state.currentTrackTitle = meta.title;
+        setMarqueeText(els.trackTitle, meta.title);
       }
       if (meta.artist) {
-        els.trackArtist.textContent = meta.artist;
+        state.currentTrackArtist = meta.artist;
+        setMarqueeText(els.trackArtist, meta.artist);
+      } else if (meta.title && meta.artist === '') {
+        state.currentTrackArtist = '';
       }
+      updateNowPlayingLookupVisibility();
       if (typeof meta.is_playing === 'boolean') {
         state.isPlaying = meta.is_playing;
         updatePlayIcon(state.isPlaying);
+      }
+      if (meta.watchdog_notice) {
+        els.statusText.textContent = `↻ ${meta.watchdog_notice}`;
+        setTimeout(() => {
+          if (state.isPlaying) els.statusText.textContent = getHeaderTitle(true);
+        }, 2400);
       }
       if (meta.artwork) {
         els.artImage.src = meta.artwork;
@@ -3329,26 +4143,33 @@
       }
     });
 
+    // Update Notifier from Electron main process
+    window.sxmApi.onUpdateAvailable((info) => {
+      applyUpdateInfo(info);
+    });
+
     // Initialize on load
     window.addEventListener('DOMContentLoaded', async () => {
       initSnowfall();
       const init = await window.sxmApi.getInitialState();
-      state.channels = init.channels || [];
-      state.favorites = init.favorites || [];
-      state.currentChannel = init.current_channel || state.channels[0];
-      state.opacity = typeof init.widget_opacity === 'number' ? init.widget_opacity : 1;
-      state.musicReactiveLights = init.music_reactive_lights !== false;
-      renderVisualSettings();
-      state.volume = typeof init.volume === 'number' ? init.volume : 100;
-      state.isMuted = !!init.is_muted;
-      state.trackHistory = Array.isArray(init.track_history) ? init.track_history : [];
-      applyTheme(init.theme || 'christmas');
-      applyVolumeUI();
-      applyMiniModeUI(!!init.mini_mode);
-      applyWidgetScaleUI(typeof init.widget_scale === 'number' ? init.widget_scale : 1);
-      applyStartupToggleUI(!!init.launch_at_startup);
-      updateCurrentChannelUI(state.currentChannel);
-      renderTrackHistory();
+      applyFullState(init);
+
+      const nowPlayingEl = document.querySelector('.now-playing');
+      if (nowPlayingEl && typeof ResizeObserver !== 'undefined') {
+        let lastNowPlayingWidth = Math.round(nowPlayingEl.clientWidth);
+        const ro = new ResizeObserver(() => {
+          const nextWidth = Math.round(nowPlayingEl.clientWidth);
+          if (Math.abs(nextWidth - lastNowPlayingWidth) > 1) {
+            lastNowPlayingWidth = nextWidth;
+            refreshNowPlayingMarquees();
+          }
+        });
+        ro.observe(nowPlayingEl);
+      }
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => refreshNowPlayingMarquees());
+      }
+      window.addEventListener('resize', refreshNowPlayingMarquees);
     });
   </script>
 </body>
