@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, nativeImage } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { DEFAULT_CHANNELS } = require('./channels');
@@ -23,6 +23,8 @@ let playerWin = null;
 let alwaysOnTop = true;
 let isPlaying = false;
 let isMiniMode = false;
+let isDrawerOpen = false;
+let widgetScale = 1;
 let currentVolume = 100;
 let isMuted = false;
 let savedWindowPos = null;
@@ -164,6 +166,9 @@ function loadUserData() {
       if (typeof data.mini_mode === 'boolean') {
         isMiniMode = data.mini_mode;
       }
+      if (typeof data.widget_scale === 'number' && Number.isFinite(data.widget_scale)) {
+        widgetScale = Math.max(0.75, Math.min(1.35, data.widget_scale));
+      }
       if (data.window_pos && typeof data.window_pos.x === 'number' && typeof data.window_pos.y === 'number') {
         savedWindowPos = { x: data.window_pos.x, y: data.window_pos.y };
       }
@@ -204,6 +209,7 @@ function saveUserData() {
       volume: currentVolume,
       is_muted: isMuted,
       mini_mode: isMiniMode,
+      widget_scale: widgetScale,
       window_pos: savedWindowPos,
       track_history: trackHistory,
       custom_channels: customChannels
@@ -489,6 +495,99 @@ async function fetchFreeRadioMetadata(ch) {
   return null;
 }
 
+let lastAdaptiveCache = { url: null, color: null };
+
+async function extractDominantColor(artworkUrl) {
+  if (!artworkUrl || typeof artworkUrl !== 'string') return null;
+  if (lastAdaptiveCache.url === artworkUrl && lastAdaptiveCache.color) {
+    return lastAdaptiveCache.color;
+  }
+
+  try {
+    let img = null;
+    if (artworkUrl.startsWith('data:image/')) {
+      img = nativeImage.createFromDataURL(artworkUrl);
+    } else if (/^https?:\/\//i.test(artworkUrl)) {
+      const resp = await fetch(artworkUrl, { headers: { 'User-Agent': 'SXMDesktopWidget/1.0' } });
+      if (!resp.ok) return null;
+      const buf = Buffer.from(await resp.arrayBuffer());
+      img = nativeImage.createFromBuffer(buf);
+    }
+    if (!img || img.isEmpty()) return null;
+
+    const resized = img.resize({ width: 24, height: 24, quality: 'good' });
+    const bitmap = resized.toBitmap();
+    if (!bitmap || bitmap.length < 4) return null;
+
+    // Group pixels into 12 hue buckets (30 deg each) weighted by vibrancy so opposite colors don't muddy to grey
+    const buckets = Array.from({ length: 12 }, () => ({ w: 0, r: 0, g: 0, b: 0 }));
+    let fallback = { w: 0, r: 0, g: 0, b: 0 };
+
+    for (let i = 0; i < bitmap.length; i += 4) {
+      // Electron toBitmap() is BGRA on Windows
+      const b = bitmap[i];
+      const g = bitmap[i + 1];
+      const r = bitmap[i + 2];
+      const a = bitmap[i + 3];
+      if (a < 128) continue;
+
+      const rf = r / 255, gf = g / 255, bf = b / 255;
+      const max = Math.max(rf, gf, bf);
+      const min = Math.min(rf, gf, bf);
+      const d = max - min;
+      const l = (max + min) / 2;
+      const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+
+      if (l < 0.08 || l > 0.94) continue;
+
+      const fbWeight = 1 - Math.abs(l - 0.5);
+      fallback.w += fbWeight;
+      fallback.r += r * fbWeight;
+      fallback.g += g * fbWeight;
+      fallback.b += b * fbWeight;
+
+      if (s < 0.14) continue;
+
+      let h = 0;
+      if (d > 0) {
+        if (max === rf) h = ((gf - bf) / d + (gf < bf ? 6 : 0)) / 6;
+        else if (max === gf) h = ((bf - rf) / d + 2) / 6;
+        else h = ((rf - gf) / d + 4) / 6;
+      }
+
+      const bucketIdx = Math.min(11, Math.floor(h * 12));
+      const weight = Math.pow(s, 1.5) * (1.15 - Math.abs(l - 0.5));
+      buckets[bucketIdx].w += weight;
+      buckets[bucketIdx].r += r * weight;
+      buckets[bucketIdx].g += g * weight;
+      buckets[bucketIdx].b += b * weight;
+    }
+
+    let best = buckets.reduce((acc, cur) => (cur.w > acc.w ? cur : acc), { w: 0, r: 0, g: 0, b: 0 });
+    if (best.w <= 0) best = fallback;
+    if (best.w <= 0) return null;
+
+    let r = Math.round(best.r / best.w);
+    let g = Math.round(best.g / best.w);
+    let b = Math.round(best.b / best.w);
+
+    // Ensure the extracted accent isn't too dark to glow cleanly
+    const maxCh = Math.max(r, g, b);
+    if (maxCh > 0 && maxCh < 155) {
+      const boost = 170 / maxCh;
+      r = Math.min(255, Math.round(r * boost));
+      g = Math.min(255, Math.round(g * boost));
+      b = Math.min(255, Math.round(b * boost));
+    }
+
+    const color = { r, g, b };
+    lastAdaptiveCache = { url: artworkUrl, color };
+    return color;
+  } catch (e) {
+    return null;
+  }
+}
+
 function startMetadataPoller() {
   setInterval(async () => {
     if (!widgetWin || widgetWin.isDestroyed()) return;
@@ -500,10 +599,12 @@ function startMetadataPoller() {
         if (isPlaying && freeMeta.title) {
           recordTrackHistory(freeMeta.title, freeMeta.artist, currentChannel);
         }
+        const adaptiveColor = freeMeta.artwork ? await extractDominantColor(freeMeta.artwork) : null;
         widgetWin.webContents.send('metadata_update', {
           title: freeMeta.title,
           artist: freeMeta.artist,
           artwork: freeMeta.artwork,
+          adaptive_color: adaptiveColor,
           is_playing: isPlaying,
           auth_needed: false
         });
@@ -630,6 +731,10 @@ function startMetadataPoller() {
           recordTrackHistory(meta.title, meta.artist, currentChannel);
         }
 
+        if (meta.artwork) {
+          meta.adaptive_color = await extractDominantColor(meta.artwork);
+        }
+
         widgetWin.webContents.send('metadata_update', meta);
       }
     } catch (e) {
@@ -638,14 +743,42 @@ function startMetadataPoller() {
   }, 2000);
 }
 
+function getScaledWidgetSize() {
+  const width = Math.round(WIDGET_WIDTH * widgetScale);
+  const baseH = isDrawerOpen ? EXPANDED_HEIGHT : (isMiniMode ? MINI_HEIGHT : COMPACT_HEIGHT);
+  let height = Math.round(baseH * widgetScale);
+  if (isDrawerOpen && widgetWin && !widgetWin.isDestroyed()) {
+    try {
+      const disp = screen.getDisplayMatching(widgetWin.getBounds());
+      if (disp && disp.workArea && disp.workArea.height) {
+        height = Math.min(height, Math.max(400, disp.workArea.height - 24));
+      }
+    } catch (e) {}
+  }
+  return { width, height };
+}
+
+function applyWidgetBoundsAndZoom() {
+  if (!widgetWin || widgetWin.isDestroyed()) return;
+  const { width, height } = getScaledWidgetSize();
+  const bounds = widgetWin.getBounds();
+  widgetWin.webContents.setZoomFactor(widgetScale);
+  widgetWin.setBounds({
+    x: bounds.x,
+    y: bounds.y,
+    width,
+    height
+  }, true);
+}
+
 function createWindows() {
   loadUserData();
   const iconPath = path.join(__dirname, 'icon.ico');
-  const initialHeight = isMiniMode ? MINI_HEIGHT : COMPACT_HEIGHT;
-  const safePos = getSafeWindowPosition(savedWindowPos, WIDGET_WIDTH, initialHeight);
+  const { width: initialWidth, height: initialHeight } = getScaledWidgetSize();
+  const safePos = getSafeWindowPosition(savedWindowPos, initialWidth, initialHeight);
 
   widgetWin = new BrowserWindow({
-    width: WIDGET_WIDTH,
+    width: initialWidth,
     height: initialHeight,
     ...(safePos ? { x: safePos.x, y: safePos.y } : {}),
     frame: false,
@@ -664,6 +797,11 @@ function createWindows() {
 
   widgetWin.loadFile(path.join(__dirname, 'ui.html'));
   widgetWin.setOpacity(widgetOpacity);
+  widgetWin.webContents.on('did-finish-load', () => {
+    if (widgetWin && !widgetWin.isDestroyed()) {
+      widgetWin.webContents.setZoomFactor(widgetScale);
+    }
+  });
 
   let savePosTimer = null;
   widgetWin.on('move', () => {
@@ -727,6 +865,7 @@ ipcMain.handle('get_initial_state', () => {
     volume: currentVolume,
     is_muted: isMuted,
     mini_mode: isMiniMode,
+    widget_scale: widgetScale,
     track_history: trackHistory,
     launch_at_startup: getLaunchAtStartup()
   };
@@ -773,18 +912,20 @@ ipcMain.handle('set_volume', async (_event, volume, muted) => {
   return { volume: currentVolume, is_muted: isMuted };
 });
 
+ipcMain.handle('set_widget_scale', (_event, scale) => {
+  if (typeof scale === 'number' && Number.isFinite(scale)) {
+    widgetScale = Math.max(0.75, Math.min(1.35, scale));
+    saveUserData();
+    applyWidgetBoundsAndZoom();
+  }
+  return widgetScale;
+});
+
 ipcMain.handle('set_mini_mode', (_event, mini) => {
   isMiniMode = !!mini;
+  if (isMiniMode) isDrawerOpen = false;
   saveUserData();
-  if (!widgetWin || widgetWin.isDestroyed()) return isMiniMode;
-  const targetH = isMiniMode ? MINI_HEIGHT : COMPACT_HEIGHT;
-  const bounds = widgetWin.getBounds();
-  widgetWin.setBounds({
-    x: bounds.x,
-    y: bounds.y,
-    width: WIDGET_WIDTH,
-    height: targetH
-  }, true);
+  applyWidgetBoundsAndZoom();
   return isMiniMode;
 });
 
@@ -800,18 +941,12 @@ ipcMain.handle('set_launch_at_startup', (_event, enabled) => {
 
 ipcMain.handle('set_drawer_open', (_event, isOpen) => {
   if (!widgetWin || widgetWin.isDestroyed()) return false;
-  if (isOpen && isMiniMode) {
+  isDrawerOpen = !!isOpen;
+  if (isDrawerOpen && isMiniMode) {
     isMiniMode = false;
     saveUserData();
   }
-  const targetH = isOpen ? EXPANDED_HEIGHT : (isMiniMode ? MINI_HEIGHT : COMPACT_HEIGHT);
-  const bounds = widgetWin.getBounds();
-  widgetWin.setBounds({
-    x: bounds.x,
-    y: bounds.y,
-    width: WIDGET_WIDTH,
-    height: targetH
-  }, true);
+  applyWidgetBoundsAndZoom();
   return true;
 });
 
@@ -825,6 +960,81 @@ ipcMain.handle('toggle_favorite', (_event, chNumber) => {
   }
   saveUserData();
   return favorites;
+});
+
+ipcMain.handle('reorder_favorites', (_event, newOrder) => {
+  if (!Array.isArray(newOrder)) return favorites;
+  const seen = new Set();
+  const cleaned = [];
+  for (const item of newOrder) {
+    const s = String(item);
+    if (!seen.has(s) && favorites.includes(s)) {
+      seen.add(s);
+      cleaned.push(s);
+    }
+  }
+  // Preserve any favorites not included in the payload (e.g. if filtered during drag)
+  for (const existing of favorites) {
+    if (!seen.has(existing)) {
+      cleaned.push(existing);
+    }
+  }
+  favorites = cleaned;
+  saveUserData();
+  return favorites;
+});
+
+ipcMain.handle('add_custom_stream', (_event, payload) => {
+  if (!payload || typeof payload !== 'object') {
+    return { ok: false, error: 'Invalid stream data.' };
+  }
+  const cleanName = String(payload.name || '').trim();
+  const cleanUrl = String(payload.streamUrl || '').trim();
+  const cleanGenre = String(payload.genre || '').trim() || 'Custom';
+  const cleanColor = /^#[0-9a-fA-F]{6}$/.test(String(payload.color || ''))
+    ? String(payload.color)
+    : '#00d2ff';
+
+  if (!cleanName) {
+    return { ok: false, error: 'Please enter a station name.' };
+  }
+  if (!/^https?:\/\/.+/i.test(cleanUrl)) {
+    return { ok: false, error: 'Stream URL must start with http:// or https://' };
+  }
+
+  const existingNums = new Set(channels.map(c => String(c.number).toUpperCase()));
+  let finalNum = String(payload.number || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
+  if (!finalNum || existingNums.has(finalNum)) {
+    let idx = 1;
+    while (existingNums.has(`C${idx}`)) idx++;
+    finalNum = `C${idx}`;
+  }
+
+  const newCh = {
+    number: finalNum,
+    name: cleanName,
+    genre: cleanGenre,
+    desc: 'Custom Radio Stream',
+    color: cleanColor,
+    isDirectStream: true,
+    isUserCustom: true,
+    streamUrl: cleanUrl
+  };
+
+  channels.push(newCh);
+  saveUserData();
+  return { ok: true, channel: newCh, channels };
+});
+
+ipcMain.handle('remove_custom_stream', (_event, chNumber) => {
+  const numStr = String(chNumber);
+  const idx = channels.findIndex(c => String(c.number) === numStr && c.isUserCustom);
+  if (idx < 0) return { ok: false, channels, favorites };
+
+  channels.splice(idx, 1);
+  favorites = favorites.filter(f => f !== numStr);
+  saveUserData();
+  return { ok: true, channels, favorites };
 });
 
 async function pauseSxmBrowser() {
@@ -853,45 +1063,26 @@ ipcMain.handle('select_channel', async (_event, chNumber) => {
   const numStr = String(chNumber);
   const target = channels.find(c => String(c.number) === numStr);
   if (!target) return null;
-
-  currentChannel = target;
-  isPlaying = true;
-  saveUserData();
-
-  if (target.isDirectStream) {
-    await pauseSxmBrowser();
-    // Immediately fetch initial metadata for the Free Radio stream so UI updates right away
-    fetchFreeRadioMetadata(target).then(meta => {
-      if (meta && widgetWin && !widgetWin.isDestroyed()) {
-        widgetWin.webContents.send('metadata_update', {
-          title: meta.title,
-          artist: meta.artist,
-          artwork: meta.artwork,
-          is_playing: true,
-          auth_needed: false
-        });
-      }
-    });
-  } else {
-    tuneSxmPlayer(target);
-  }
-  return { channel: currentChannel, is_playing: isPlaying };
+  return tuneToTargetChannel(target);
 });
 
-ipcMain.handle('step_channel', async (_event, delta, filterCategory, searchQuery) => {
-  let pool = channels;
+function getFilteredChannelPool(filterCategory, searchQuery) {
   const filter = typeof filterCategory === 'string' ? filterCategory : (filterCategory === true ? 'favorites' : 'all');
   const q = (searchQuery || '').trim().toLowerCase();
 
-  const filteredPool = channels.filter(ch => {
+  let filteredPool = channels.filter(ch => {
     if (filter === 'favorites' && !favorites.includes(String(ch.number))) {
       return false;
     }
-    if (filter === 'all' && ch.isDirectStream) {
-      // Keep the "All (826)" tab strictly for SiriusXM channels unless searching or in Free Radio / Favorites!
+    if (filter === 'all' && !q && ch.isDirectStream) {
+      // Keep the "All (826)" tab strictly for SiriusXM channels unless searching or in Free Radio / Custom / Favorites!
       return false;
     }
-    if (filter !== 'all' && filter !== 'favorites') {
+    if (filter === 'Custom') {
+      if (!ch.isUserCustom && (ch.genre || '').toLowerCase() !== 'custom') {
+        return false;
+      }
+    } else if (filter !== 'all' && filter !== 'favorites') {
       if ((ch.genre || '').toLowerCase() !== filter.toLowerCase()) {
         return false;
       }
@@ -906,9 +1097,44 @@ ipcMain.handle('step_channel', async (_event, delta, filterCategory, searchQuery
     return true;
   });
 
-  if (filteredPool.length > 0) {
-    pool = filteredPool;
+  if (filter === 'favorites') {
+    filteredPool.sort((a, b) => favorites.indexOf(String(a.number)) - favorites.indexOf(String(b.number)));
   }
+
+  return filteredPool.length > 0 ? filteredPool : channels;
+}
+
+async function tuneToTargetChannel(target) {
+  currentChannel = target;
+  isPlaying = true;
+  saveUserData();
+
+  if (target.isDirectStream) {
+    await pauseSxmBrowser();
+    fetchFreeRadioMetadata(target).then(async meta => {
+      if (meta && widgetWin && !widgetWin.isDestroyed()) {
+        if (meta.title) {
+          recordTrackHistory(meta.title, meta.artist, target);
+        }
+        const adaptiveColor = meta.artwork ? await extractDominantColor(meta.artwork) : null;
+        widgetWin.webContents.send('metadata_update', {
+          title: meta.title,
+          artist: meta.artist,
+          artwork: meta.artwork,
+          adaptive_color: adaptiveColor,
+          is_playing: true,
+          auth_needed: false
+        });
+      }
+    });
+  } else {
+    tuneSxmPlayer(target);
+  }
+  return { channel: currentChannel, is_playing: isPlaying };
+}
+
+ipcMain.handle('step_channel', async (_event, delta, filterCategory, searchQuery) => {
+  const pool = getFilteredChannelPool(filterCategory, searchQuery);
   if (pool.length === 0) return null;
 
   let currIdx = pool.findIndex(c => String(c.number) === String(currentChannel.number));
@@ -919,28 +1145,18 @@ ipcMain.handle('step_channel', async (_event, delta, filterCategory, searchQuery
     nextIdx = (currIdx + Number(delta) + pool.length) % pool.length;
   }
 
-  const target = pool[nextIdx];
-  currentChannel = target;
-  isPlaying = true;
-  saveUserData();
+  return tuneToTargetChannel(pool[nextIdx]);
+});
 
-  if (target.isDirectStream) {
-    await pauseSxmBrowser();
-    fetchFreeRadioMetadata(target).then(meta => {
-      if (meta && widgetWin && !widgetWin.isDestroyed()) {
-        widgetWin.webContents.send('metadata_update', {
-          title: meta.title,
-          artist: meta.artist,
-          artwork: meta.artwork,
-          is_playing: true,
-          auth_needed: false
-        });
-      }
-    });
-  } else {
-    tuneSxmPlayer(target);
-  }
-  return { channel: currentChannel, is_playing: isPlaying };
+ipcMain.handle('random_channel', async (_event, filterCategory, searchQuery) => {
+  const pool = getFilteredChannelPool(filterCategory, searchQuery);
+  if (pool.length === 0) return null;
+
+  const candidates = pool.length > 1
+    ? pool.filter(c => String(c.number) !== String(currentChannel && currentChannel.number))
+    : pool;
+  const pick = candidates[Math.floor(Math.random() * candidates.length)] || pool[0];
+  return tuneToTargetChannel(pick);
 });
 
 ipcMain.handle('toggle_play', async () => {

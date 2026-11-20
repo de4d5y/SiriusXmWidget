@@ -216,6 +216,29 @@
       --show-lights: 0;
     }
 
+    body[data-theme="adaptive"] {
+      --bg-shell: linear-gradient(145deg, rgba(20, 26, 40, 0.97) 0%, rgba(10, 13, 21, 0.99) 100%);
+      --bg-drawer: rgba(10, 13, 21, 0.98);
+      --bg-card: rgba(0, 210, 255, 0.08);
+      --bg-card-hover: rgba(0, 210, 255, 0.16);
+      --border-glass: rgba(0, 210, 255, 0.38);
+      --accent: #00d2ff;
+      --accent-secondary: #0072ff;
+      --accent-glow: rgba(0, 210, 255, 0.42);
+      --play-btn-grad: linear-gradient(135deg, #00d2ff 0%, #0072ff 100%);
+      --play-btn-shadow: rgba(0, 210, 255, 0.46);
+      --badge-bg: rgba(0, 210, 255, 0.18);
+      --badge-border: rgba(0, 210, 255, 0.42);
+      --badge-text: #7dd3fc;
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --fav-gold: #fbbf24;
+      --live-green: #34d399;
+      --show-snow: 0;
+      --show-lights: 0;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -567,6 +590,45 @@
       justify-content: space-between;
       gap: 12px;
       padding: 2px 2px 0 2px;
+    }
+
+    .setting-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .size-pills {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 2px;
+    }
+
+    .size-pill {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-secondary);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .size-pill:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .size-pill.active {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 8px var(--accent-glow);
     }
 
     .setting-label {
@@ -1050,6 +1112,8 @@
       -webkit-appearance: none;
       appearance: none;
       flex: 1;
+      min-width: 0;
+      width: 100%;
       height: 5px;
       border-radius: 999px;
       background: var(--badge-bg);
@@ -1539,6 +1603,281 @@
       color: var(--text-secondary);
       font-size: 15px;
     }
+
+    /* Drag-and-drop favorites styling */
+    .drag-handle {
+      color: var(--text-muted);
+      font-size: 14px;
+      letter-spacing: -2px;
+      cursor: grab;
+      padding: 4px 4px 4px 0;
+      opacity: 0.65;
+      flex-shrink: 0;
+      transition: opacity 0.15s ease, color 0.15s ease;
+    }
+
+    .channel-item:hover .drag-handle {
+      opacity: 1;
+      color: var(--text-secondary);
+    }
+
+    .channel-item.dragging {
+      opacity: 0.45;
+      border-color: var(--accent);
+    }
+
+    .channel-item.drag-over-top {
+      box-shadow: 0 -2px 0 0 var(--accent);
+    }
+
+    .channel-item.drag-over-bottom {
+      box-shadow: 0 2px 0 0 var(--accent);
+    }
+
+    .item-delete-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .item-delete-btn:hover {
+      background: rgba(239, 68, 68, 0.25);
+      color: #fca5a5;
+    }
+
+    /* Drawer Footer Actions */
+    .footer-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .add-stream-trigger {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      color: var(--text-primary);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .add-stream-trigger:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent);
+    }
+
+    /* Inline Add Custom Stream Panel inside Drawer */
+    .add-stream-panel {
+      display: none;
+      flex-direction: column;
+      gap: 9px;
+      padding: 12px 18px;
+      background: rgba(0, 0, 0, 0.32);
+      border-bottom: 1px solid var(--border-glass);
+    }
+
+    .add-stream-panel.open {
+      display: flex;
+    }
+
+    .add-stream-title {
+      font-size: 11.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .add-stream-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 8px;
+    }
+
+    .add-stream-grid-2 {
+      display: grid;
+      grid-template-columns: 95px 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .stream-input {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 9px;
+      padding: 7px 11px;
+      font-size: 13px;
+      color: var(--text-primary);
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .stream-input:focus {
+      border-color: var(--accent);
+      background: var(--bg-card-hover);
+    }
+
+    .swatch-picker {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .swatch-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: transform 0.12s ease, border-color 0.12s ease;
+      padding: 0;
+    }
+
+    .swatch-dot:hover {
+      transform: scale(1.15);
+    }
+
+    .swatch-dot.active {
+      border-color: #fff;
+      transform: scale(1.15);
+    }
+
+    .add-stream-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .add-stream-error {
+      font-size: 12px;
+      color: #fca5a5;
+      font-weight: 600;
+    }
+
+    .add-stream-btns {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-ghost {
+      background: var(--bg-card);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: var(--text-secondary);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-ghost:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+    }
+
+    .btn-primary {
+      background: var(--play-btn-grad);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: #fff;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 3px 10px var(--play-btn-shadow);
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.1);
+    }
+
+    /* Direct Channel Number Entry HUD */
+    .keypad-hud {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.95);
+      z-index: 70;
+      background: rgba(10, 14, 22, 0.94);
+      border: 1.5px solid var(--accent);
+      border-radius: 16px;
+      padding: 10px 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75), 0 0 22px var(--accent-glow);
+      backdrop-filter: blur(12px);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.14s ease, transform 0.14s ease;
+    }
+
+    .keypad-hud.visible {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .keypad-num {
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+
+    .keypad-preview {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--badge-text);
+      max-width: 260px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .keypad-preview.no-match {
+      color: var(--text-muted);
+    }
+
+    .keypad-hint {
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      margin-top: 2px;
+    }
+
+    body.mini-mode .keypad-hud {
+      flex-direction: row;
+      gap: 10px;
+      padding: 6px 14px;
+      border-radius: 12px;
+    }
+
+    body.mini-mode .keypad-num {
+      font-size: 17px;
+    }
+
+    body.mini-mode .keypad-hint {
+      display: none;
+    }
   </style>
 </head>
 <body data-theme="christmas">
@@ -1567,6 +1906,7 @@
         <button class="go-live-pill" id="topGoLiveBtn" title="Jump to Live Broadcast Playback">● LIVE</button>
         <button class="mini-btn" id="themeBtn" title="Themes & Startup">🎨</button>
         <button class="mini-btn" id="historyBtn" title="Recent Track History (Last 12)">🕒</button>
+        <button class="mini-btn" id="surpriseBtn" title="Surprise Me (Random Channel in Current Filter)">🎲</button>
         <button class="mini-btn" id="favCycleBtn" title="Cycle All Channels vs. Favorites Only (Prev/Next)">★</button>
         <button class="mini-btn" id="loginBtn" title="Show/Hide SiriusXM Web Player (Sign In)">🌐</button>
         <button class="mini-btn" id="miniModeBtn" title="Mini Bar Mode">▬</button>
@@ -1594,11 +1934,23 @@
         <button class="theme-chip" data-theme="midnight">🌌 Midnight</button>
         <button class="theme-chip" data-theme="synthwave">🌆 Synthwave</button>
         <button class="theme-chip" data-theme="nyquil">🧪 NyQuil</button>
+        <button class="theme-chip" data-theme="adaptive">🌈 Adaptive</button>
       </div>
       <div class="popover-divider"></div>
       <div class="setting-row">
-        <span class="setting-label">🚀 Launch with Windows</span>
-        <button class="toggle-switch" id="startupToggle" role="switch" aria-checked="false" title="Start SiriusXM Widget automatically when Windows starts"></button>
+        <div class="setting-group">
+          <span class="setting-label">📐 Size</span>
+          <div class="size-pills" id="sizePills">
+            <button class="size-pill" data-scale="0.8" title="Small (80%)">S</button>
+            <button class="size-pill active" data-scale="1" title="Medium (100%)">M</button>
+            <button class="size-pill" data-scale="1.15" title="Large (115%)">L</button>
+            <button class="size-pill" data-scale="1.3" title="Extra Large (130%)">XL</button>
+          </div>
+        </div>
+        <div class="setting-group">
+          <span class="setting-label">🚀 Launch with Windows</span>
+          <button class="toggle-switch" id="startupToggle" role="switch" aria-checked="false" title="Start SiriusXM Widget automatically when Windows starts"></button>
+        </div>
       </div>
     </div>
 
@@ -1694,6 +2046,7 @@
           <button class="tab-pill active" data-filter="all">All SXM (826)</button>
           <button class="tab-pill" data-filter="favorites">★ Favorites</button>
           <button class="tab-pill" data-filter="Free Radio">📻 Free Holiday Radio (11)</button>
+          <button class="tab-pill" data-filter="Custom">📡 Custom</button>
           <button class="tab-pill" data-filter="Holiday">🎄 SXM Holiday</button>
           <button class="tab-pill" data-filter="Pop">Pop</button>
           <button class="tab-pill" data-filter="Decades">Decades</button>
@@ -1713,12 +2066,52 @@
         </div>
       </div>
 
+      <!-- Inline Add Custom Radio Stream Form -->
+      <div class="add-stream-panel" id="addStreamPanel">
+        <div class="add-stream-title">
+          <span>📡 Add Custom Radio Stream</span>
+        </div>
+        <div class="add-stream-grid">
+          <input type="text" class="stream-input" id="customStreamName" placeholder="Station Name (e.g. Lo-Fi Beats)" />
+          <input type="url" class="stream-input" id="customStreamUrl" placeholder="Stream URL (https://...mp3 / aac)" />
+        </div>
+        <div class="add-stream-grid-2">
+          <input type="text" class="stream-input" id="customStreamNum" placeholder="Code (C1)" maxlength="4" />
+          <input type="text" class="stream-input" id="customStreamGenre" placeholder="Genre (default: Custom)" />
+          <div class="swatch-picker" id="customStreamSwatches">
+            <button type="button" class="swatch-dot active" data-color="#00d2ff" style="background:#00d2ff" title="Cyan"></button>
+            <button type="button" class="swatch-dot" data-color="#ef4444" style="background:#ef4444" title="Red"></button>
+            <button type="button" class="swatch-dot" data-color="#10b981" style="background:#10b981" title="Emerald"></button>
+            <button type="button" class="swatch-dot" data-color="#f59e0b" style="background:#f59e0b" title="Amber"></button>
+            <button type="button" class="swatch-dot" data-color="#a855f7" style="background:#a855f7" title="Purple"></button>
+            <button type="button" class="swatch-dot" data-color="#ec4899" style="background:#ec4899" title="Pink"></button>
+          </div>
+        </div>
+        <div class="add-stream-footer">
+          <span class="add-stream-error" id="customStreamError"></span>
+          <div class="add-stream-btns">
+            <button type="button" class="btn-ghost" id="cancelAddStreamBtn">Cancel</button>
+            <button type="button" class="btn-primary" id="saveAddStreamBtn">Save & Play</button>
+          </div>
+        </div>
+      </div>
+
       <div class="channel-list" id="channelList"></div>
 
       <div class="drawer-footer">
         <span id="channelCountLabel">826 Channels</span>
-        <button class="footer-link" id="openPlayerLink">Open SXM Player Window ↗</button>
+        <div class="footer-actions">
+          <button class="add-stream-trigger" id="openAddStreamBtn" title="Add your own MP3/AAC radio stream">+ Add Stream</button>
+          <button class="footer-link" id="openPlayerLink">Open SXM Player Window ↗</button>
+        </div>
       </div>
+    </div>
+
+    <!-- Direct Channel Number Entry HUD -->
+    <div class="keypad-hud" id="keypadHud">
+      <div class="keypad-num" id="keypadNum">CH 71</div>
+      <div class="keypad-preview" id="keypadPreview">Holiday Traditions</div>
+      <div class="keypad-hint">Enter to tune • Esc to cancel</div>
     </div>
     <!-- Built-in HTML5 Audio Engine for Ad-Free Direct Internet Radio Streams -->
     <audio id="directAudio" preload="none" crossorigin="anonymous" style="display:none;"></audio>
@@ -1757,12 +2150,14 @@
       opacitySlider: document.getElementById('opacitySlider'),
       opacityValue: document.getElementById('opacityValue'),
       musicReactiveToggle: document.getElementById('musicReactiveToggle'),
+      sizePills: document.getElementById('sizePills'),
       startupToggle: document.getElementById('startupToggle'),
       historyBtn: document.getElementById('historyBtn'),
       historyPopover: document.getElementById('historyPopover'),
       historyTitle: document.getElementById('historyTitle'),
       historyList: document.getElementById('historyList'),
       clearHistoryBtn: document.getElementById('clearHistoryBtn'),
+      surpriseBtn: document.getElementById('surpriseBtn'),
       favCycleBtn: document.getElementById('favCycleBtn'),
       loginBtn: document.getElementById('loginBtn'),
       miniModeBtn: document.getElementById('miniModeBtn'),
@@ -1797,6 +2192,19 @@
       filterTabs: document.getElementById('filterTabs'),
       channelList: document.getElementById('channelList'),
       channelCountLabel: document.getElementById('channelCountLabel'),
+      openAddStreamBtn: document.getElementById('openAddStreamBtn'),
+      addStreamPanel: document.getElementById('addStreamPanel'),
+      customStreamName: document.getElementById('customStreamName'),
+      customStreamUrl: document.getElementById('customStreamUrl'),
+      customStreamNum: document.getElementById('customStreamNum'),
+      customStreamGenre: document.getElementById('customStreamGenre'),
+      customStreamSwatches: document.getElementById('customStreamSwatches'),
+      customStreamError: document.getElementById('customStreamError'),
+      cancelAddStreamBtn: document.getElementById('cancelAddStreamBtn'),
+      saveAddStreamBtn: document.getElementById('saveAddStreamBtn'),
+      keypadHud: document.getElementById('keypadHud'),
+      keypadNum: document.getElementById('keypadNum'),
+      keypadPreview: document.getElementById('keypadPreview'),
       openPlayerLink: document.getElementById('openPlayerLink'),
       directAudio: document.getElementById('directAudio')
     };
@@ -1987,6 +2395,14 @@
       els.startupToggle.setAttribute('aria-checked', String(state.launchAtStartup));
     }
 
+    function applyWidgetScaleUI(scale) {
+      state.widgetScale = typeof scale === 'number' && Number.isFinite(scale) ? scale : 1;
+      els.sizePills.querySelectorAll('.size-pill').forEach(btn => {
+        const s = Number(btn.dataset.scale);
+        btn.classList.toggle('active', Math.abs(s - state.widgetScale) < 0.03);
+      });
+    }
+
     function playOrStopDirectStream(ch, shouldPlay) {
       if (!els.directAudio) return;
       if (!ch || !ch.isDirectStream || !shouldPlay) {
@@ -2108,7 +2524,72 @@
       if (state.theme === 'nyquil') {
         return playing ? '🧪 LIVE STREAMING' : '🧪 SIRIUSXM NIGHTTIME EDITION';
       }
+      if (state.theme === 'adaptive') {
+        return playing ? '🌈 LIVE STREAMING' : '🌈 SIRIUSXM ADAPTIVE EDITION';
+      }
       return playing ? 'LIVE STREAMING' : 'SIRIUSXM DESKTOP WIDGET';
+    }
+
+    const ADAPTIVE_VARS = [
+      '--bg-shell', '--bg-drawer', '--bg-card', '--bg-card-hover', '--border-glass',
+      '--accent', '--accent-secondary', '--accent-glow', '--play-btn-grad',
+      '--play-btn-shadow', '--badge-bg', '--badge-border', '--badge-text'
+    ];
+
+    function hexToRgb(hex) {
+      const m = String(hex || '').trim().match(/^#?([0-9a-f]{6})$/i);
+      if (!m) return { r: 0, g: 210, b: 255 };
+      const n = parseInt(m[1], 16);
+      return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+    }
+
+    function clearAdaptiveInlineVars() {
+      for (const v of ADAPTIVE_VARS) {
+        document.body.style.removeProperty(v);
+      }
+    }
+
+    function applyAdaptivePalette(rgb) {
+      if (state.theme !== 'adaptive') return;
+      const c = (rgb && typeof rgb.r === 'number')
+        ? rgb
+        : hexToRgb(state.currentChannel && state.currentChannel.color);
+
+      const r = Math.max(0, Math.min(255, Math.round(c.r)));
+      const g = Math.max(0, Math.min(255, Math.round(c.g)));
+      const b = Math.max(0, Math.min(255, Math.round(c.b)));
+
+      const shellR1 = Math.round(12 + r * 0.16);
+      const shellG1 = Math.round(14 + g * 0.16);
+      const shellB1 = Math.round(18 + b * 0.16);
+      const shellR2 = Math.round(7 + r * 0.08);
+      const shellG2 = Math.round(9 + g * 0.08);
+      const shellB2 = Math.round(13 + b * 0.08);
+
+      const deepR = Math.round(r * 0.62);
+      const deepG = Math.round(g * 0.62);
+      const deepB = Math.round(b * 0.62);
+      const lightR = Math.min(255, Math.round(r + (255 - r) * 0.45));
+      const lightG = Math.min(255, Math.round(g + (255 - g) * 0.45));
+      const lightB = Math.min(255, Math.round(b + (255 - b) * 0.45));
+
+      const s = document.body.style;
+      s.setProperty('--bg-shell', `linear-gradient(145deg, rgba(${shellR1}, ${shellG1}, ${shellB1}, 0.97) 0%, rgba(${shellR2}, ${shellG2}, ${shellB2}, 0.99) 100%)`);
+      s.setProperty('--bg-drawer', `rgba(${shellR2}, ${shellG2}, ${shellB2}, 0.98)`);
+      s.setProperty('--bg-card', `rgba(${r}, ${g}, ${b}, 0.09)`);
+      s.setProperty('--bg-card-hover', `rgba(${r}, ${g}, ${b}, 0.18)`);
+      s.setProperty('--border-glass', `rgba(${r}, ${g}, ${b}, 0.42)`);
+      s.setProperty('--accent', `rgb(${r}, ${g}, ${b})`);
+      s.setProperty('--accent-secondary', `rgb(${deepR}, ${deepG}, ${deepB})`);
+      s.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.48)`);
+      s.setProperty('--play-btn-grad', `linear-gradient(135deg, rgb(${r}, ${g}, ${b}) 0%, rgb(${deepR}, ${deepG}, ${deepB}) 100%)`);
+      s.setProperty('--play-btn-shadow', `rgba(${r}, ${g}, ${b}, 0.48)`);
+      s.setProperty('--badge-bg', `rgba(${r}, ${g}, ${b}, 0.2)`);
+      s.setProperty('--badge-border', `rgba(${r}, ${g}, ${b}, 0.46)`);
+      s.setProperty('--badge-text', `rgb(${lightR}, ${lightG}, ${lightB})`);
+
+      els.ambientGlow.style.background = `radial-gradient(circle, rgba(${r}, ${g}, ${b}, 0.45) 0%, transparent 70%)`;
+      applyVolumeUI();
     }
 
     function applyTheme(themeId) {
@@ -2117,6 +2598,11 @@
       document.querySelectorAll('.theme-chip').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.theme === state.theme);
       });
+      if (state.theme === 'adaptive') {
+        applyAdaptivePalette(state.lastAdaptiveColor);
+      } else {
+        clearAdaptiveInlineVars();
+      }
       els.statusText.textContent = getHeaderTitle(state.isPlaying);
       if (state.theme === 'christmas' && state.currentChannel?.isDirectStream && state.isPlaying) startMusicAnalysis();
       else stopMusicAnalysis();
@@ -2176,6 +2662,15 @@
       const next = !state.launchAtStartup;
       const applied = await window.sxmApi.setLaunchAtStartup(next);
       applyStartupToggleUI(applied);
+    });
+
+    els.sizePills.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.size-pill');
+      if (!btn) return;
+      const targetScale = Number(btn.dataset.scale);
+      if (!Number.isFinite(targetScale)) return;
+      const applied = await window.sxmApi.setWidgetScale(targetScale);
+      applyWidgetScaleUI(applied);
     });
 
     // Track History Popover Events
@@ -2276,6 +2771,9 @@
       const color = ch.color || '#ef4444';
       els.artWrapper.style.background = `linear-gradient(135deg, ${color}dd, #0f172a)`;
       els.ambientGlow.style.background = `radial-gradient(circle, ${color}55 0%, transparent 70%)`;
+      if (state.theme === 'adaptive' && !state.lastAdaptiveColor) {
+        applyAdaptivePalette(hexToRgb(color));
+      }
 
       const isFav = state.favorites.includes(String(ch.number));
       els.currentFavBtn.classList.toggle('favorited', isFav);
@@ -2285,15 +2783,21 @@
 
     function renderChannelList() {
       const q = state.searchQuery.trim().toLowerCase();
-      const filtered = state.channels.filter(ch => {
+      const isFavReorderMode = state.activeFilter === 'favorites' && !q;
+
+      let filtered = state.channels.filter(ch => {
         if (state.activeFilter === 'favorites' && !state.favorites.includes(String(ch.number))) {
           return false;
         }
         if (state.activeFilter === 'all' && !q && ch.isDirectStream) {
-          // Keep "All SXM (826)" dedicated to SiriusXM channels unless searching or in Free Holiday Radio / Favorites
+          // Keep "All SXM (826)" dedicated to SiriusXM channels unless searching or in Free Holiday Radio / Custom / Favorites
           return false;
         }
-        if (state.activeFilter !== 'all' && state.activeFilter !== 'favorites') {
+        if (state.activeFilter === 'Custom') {
+          if (!ch.isUserCustom && (ch.genre || '').toLowerCase() !== 'custom') {
+            return false;
+          }
+        } else if (state.activeFilter !== 'all' && state.activeFilter !== 'favorites') {
           if ((ch.genre || '').toLowerCase() !== state.activeFilter.toLowerCase()) {
             return false;
           }
@@ -2308,10 +2812,17 @@
         return true;
       });
 
+      if (state.activeFilter === 'favorites') {
+        filtered.sort((a, b) => state.favorites.indexOf(String(a.number)) - state.favorites.indexOf(String(b.number)));
+      }
+
       els.channelCountLabel.textContent = `${filtered.length} Channel${filtered.length === 1 ? '' : 's'}`;
 
       if (filtered.length === 0) {
-        els.channelList.innerHTML = `<div class="empty-state">No channels match your filter.</div>`;
+        const emptyMsg = state.activeFilter === 'Custom'
+          ? 'No custom streams yet. Click "+ Add Stream" below to add one!'
+          : 'No channels match your filter.';
+        els.channelList.innerHTML = `<div class="empty-state">${emptyMsg}</div>`;
         return;
       }
 
@@ -2319,27 +2830,126 @@
         const isFav = state.favorites.includes(String(ch.number));
         const isActive = state.currentChannel && String(state.currentChannel.number) === String(ch.number);
         const color = ch.color || '#00d2ff';
-        const prefix = ch.isDirectStream ? `Free Stream` : `Ch ${ch.number}`;
+        const prefix = ch.isUserCustom ? `Custom Stream` : (ch.isDirectStream ? `Free Stream` : `Ch ${ch.number}`);
         const subText = ch.desc ? `${prefix} • ${ch.desc}` : `${prefix} • ${ch.genre || 'SiriusXM'}`;
+        const dragHandle = isFavReorderMode ? `<span class="drag-handle" title="Drag to reorder">⋮⋮</span>` : '';
+        const deleteBtn = ch.isUserCustom
+          ? `<button class="item-delete-btn" data-delete="${escapeHtml(ch.number)}" title="Remove Custom Stream">✕</button>`
+          : '';
         return `
-          <div class="channel-item ${isActive ? 'active' : ''}" data-number="${ch.number}">
+          <div class="channel-item ${isActive ? 'active' : ''}" data-number="${escapeHtml(ch.number)}" ${isFavReorderMode ? 'draggable="true"' : ''}>
             <div class="ch-item-left">
-              <div class="ch-item-swatch" style="background: ${color}">${ch.number}</div>
+              ${dragHandle}
+              <div class="ch-item-swatch" style="background: ${color}">${escapeHtml(ch.number)}</div>
               <div class="ch-item-info">
-                <div class="ch-item-title">${ch.name}</div>
-                <div class="ch-item-sub">${subText}</div>
+                <div class="ch-item-title">${escapeHtml(ch.name)}</div>
+                <div class="ch-item-sub">${escapeHtml(subText)}</div>
               </div>
             </div>
             <div class="ch-item-right">
-              <button class="item-fav-btn ${isFav ? 'favorited' : ''}" data-fav="${ch.number}" title="Toggle Favorite">★</button>
+              ${deleteBtn}
+              <button class="item-fav-btn ${isFav ? 'favorited' : ''}" data-fav="${escapeHtml(ch.number)}" title="Toggle Favorite">★</button>
             </div>
           </div>
         `;
       }).join('');
     }
 
+    // Drag-and-Drop Reordering for Favorites Tab
+    let draggedFavNum = null;
+
+    function clearDragIndicators() {
+      els.channelList.querySelectorAll('.channel-item').forEach(el => {
+        el.classList.remove('dragging', 'drag-over-top', 'drag-over-bottom');
+      });
+    }
+
+    els.channelList.addEventListener('dragstart', (e) => {
+      if (state.activeFilter !== 'favorites' || state.searchQuery.trim()) return;
+      const item = e.target.closest('.channel-item');
+      if (!item) return;
+      draggedFavNum = String(item.dataset.number);
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', draggedFavNum);
+    });
+
+    els.channelList.addEventListener('dragover', (e) => {
+      if (!draggedFavNum || state.activeFilter !== 'favorites') return;
+      const item = e.target.closest('.channel-item');
+      if (!item || String(item.dataset.number) === draggedFavNum) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      clearDragIndicators();
+      const draggedEl = els.channelList.querySelector(`.channel-item[data-number="${CSS.escape(draggedFavNum)}"]`);
+      if (draggedEl) draggedEl.classList.add('dragging');
+      const rect = item.getBoundingClientRect();
+      const isBottom = (e.clientY - rect.top) > rect.height / 2;
+      item.classList.add(isBottom ? 'drag-over-bottom' : 'drag-over-top');
+    });
+
+    els.channelList.addEventListener('dragleave', (e) => {
+      const item = e.target.closest('.channel-item');
+      if (item) {
+        item.classList.remove('drag-over-top', 'drag-over-bottom');
+      }
+    });
+
+    els.channelList.addEventListener('drop', async (e) => {
+      if (!draggedFavNum || state.activeFilter !== 'favorites') return;
+      e.preventDefault();
+      const targetItem = e.target.closest('.channel-item');
+      const sourceNum = draggedFavNum;
+      draggedFavNum = null;
+      if (!targetItem) {
+        clearDragIndicators();
+        return;
+      }
+      const targetNum = String(targetItem.dataset.number);
+      if (sourceNum === targetNum) {
+        clearDragIndicators();
+        return;
+      }
+      const rect = targetItem.getBoundingClientRect();
+      const insertAfter = (e.clientY - rect.top) > rect.height / 2;
+
+      const updated = state.favorites.filter(f => String(f) !== sourceNum);
+      let targetIdx = updated.indexOf(targetNum);
+      if (targetIdx < 0) {
+        updated.push(sourceNum);
+      } else {
+        if (insertAfter) targetIdx += 1;
+        updated.splice(targetIdx, 0, sourceNum);
+      }
+
+      clearDragIndicators();
+      state.favorites = await window.sxmApi.reorderFavorites(updated);
+      renderChannelList();
+    });
+
+    els.channelList.addEventListener('dragend', () => {
+      draggedFavNum = null;
+      clearDragIndicators();
+    });
+
     // Event Delegation for Channel List
     els.channelList.addEventListener('click', async (e) => {
+      const deleteBtn = e.target.closest('.item-delete-btn');
+      if (deleteBtn) {
+        e.stopPropagation();
+        const chNum = String(deleteBtn.dataset.delete);
+        const res = await window.sxmApi.removeCustomStream(chNum);
+        if (res && res.ok) {
+          state.channels = res.channels;
+          state.favorites = res.favorites;
+          if (state.currentChannel && String(state.currentChannel.number) === chNum) {
+            playOrStopDirectStream(null, false);
+          }
+          renderChannelList();
+        }
+        return;
+      }
+
       const favBtn = e.target.closest('.item-fav-btn');
       if (favBtn) {
         e.stopPropagation();
@@ -2362,6 +2972,173 @@
           state.isPlaying = res.is_playing;
           playOrStopDirectStream(res.channel, state.isPlaying);
           updatePlayIcon(state.isPlaying);
+        }
+      }
+    });
+
+    // Add Custom Radio Stream Panel
+    let selectedCustomColor = '#00d2ff';
+
+    function openAddStreamPanel(show) {
+      els.addStreamPanel.classList.toggle('open', show);
+      els.customStreamError.textContent = '';
+      if (show) {
+        els.customStreamName.focus();
+      }
+    }
+
+    els.openAddStreamBtn.addEventListener('click', () => {
+      const isOpen = els.addStreamPanel.classList.contains('open');
+      openAddStreamPanel(!isOpen);
+    });
+
+    els.cancelAddStreamBtn.addEventListener('click', () => openAddStreamPanel(false));
+
+    els.customStreamSwatches.addEventListener('click', (e) => {
+      const dot = e.target.closest('.swatch-dot');
+      if (!dot) return;
+      selectedCustomColor = dot.dataset.color || '#00d2ff';
+      els.customStreamSwatches.querySelectorAll('.swatch-dot').forEach(d => {
+        d.classList.toggle('active', d === dot);
+      });
+    });
+
+    async function handleSaveCustomStream() {
+      els.customStreamError.textContent = '';
+      const res = await window.sxmApi.addCustomStream({
+        name: els.customStreamName.value,
+        streamUrl: els.customStreamUrl.value,
+        number: els.customStreamNum.value,
+        genre: els.customStreamGenre.value,
+        color: selectedCustomColor
+      });
+
+      if (!res || !res.ok) {
+        els.customStreamError.textContent = (res && res.error) || 'Could not add stream.';
+        return;
+      }
+
+      state.channels = res.channels;
+      els.customStreamName.value = '';
+      els.customStreamUrl.value = '';
+      els.customStreamNum.value = '';
+      els.customStreamGenre.value = '';
+      openAddStreamPanel(false);
+
+      // Switch to Custom tab and start playing the new stream immediately
+      state.activeFilter = 'Custom';
+      state.cycleFavoritesOnly = false;
+      els.favCycleBtn.classList.remove('active');
+      document.querySelectorAll('.tab-pill').forEach(b => {
+        b.classList.toggle('active', b.dataset.filter === 'Custom');
+      });
+
+      const playRes = await window.sxmApi.selectChannel(res.channel.number);
+      if (playRes && playRes.channel) {
+        updateCurrentChannelUI(playRes.channel);
+        state.isPlaying = playRes.is_playing;
+        playOrStopDirectStream(playRes.channel, state.isPlaying);
+        updatePlayIcon(state.isPlaying);
+      } else {
+        renderChannelList();
+      }
+    }
+
+    els.saveAddStreamBtn.addEventListener('click', handleSaveCustomStream);
+    [els.customStreamName, els.customStreamUrl, els.customStreamNum, els.customStreamGenre].forEach(inp => {
+      inp.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleSaveCustomStream();
+        if (e.key === 'Escape') openAddStreamPanel(false);
+      });
+    });
+
+    // Surprise Me (Random Channel) Button
+    els.surpriseBtn.addEventListener('click', async () => {
+      const effectiveFilter = state.cycleFavoritesOnly ? 'favorites' : state.activeFilter;
+      const res = await window.sxmApi.randomChannel(effectiveFilter, state.searchQuery);
+      if (res && res.channel) {
+        updateCurrentChannelUI(res.channel);
+        state.isPlaying = res.is_playing;
+        playOrStopDirectStream(res.channel, state.isPlaying);
+        updatePlayIcon(state.isPlaying);
+        els.statusText.textContent = `🎲 SURPRISE: CH ${res.channel.number}`;
+        setTimeout(() => {
+          els.statusText.textContent = getHeaderTitle(state.isPlaying);
+        }, 1600);
+      }
+    });
+
+    // Direct Channel Number Entry (Car-Radio Style Keypad HUD)
+    let keypadBuffer = '';
+    let keypadTimer = null;
+
+    function findChannelByEntry(buf) {
+      const upper = buf.toUpperCase();
+      return state.channels.find(c => String(c.number).toUpperCase() === upper) || null;
+    }
+
+    function hideKeypadHud() {
+      keypadBuffer = '';
+      if (keypadTimer) {
+        clearTimeout(keypadTimer);
+        keypadTimer = null;
+      }
+      els.keypadHud.classList.remove('visible');
+    }
+
+    function updateKeypadHud() {
+      if (!keypadBuffer) {
+        hideKeypadHud();
+        return;
+      }
+      const match = findChannelByEntry(keypadBuffer);
+      els.keypadNum.textContent = `CH ${keypadBuffer}`;
+      if (match) {
+        els.keypadPreview.textContent = match.name;
+        els.keypadPreview.classList.remove('no-match');
+      } else {
+        els.keypadPreview.textContent = 'No matching channel';
+        els.keypadPreview.classList.add('no-match');
+      }
+      els.keypadHud.classList.add('visible');
+
+      if (keypadTimer) clearTimeout(keypadTimer);
+      keypadTimer = setTimeout(hideKeypadHud, 2500);
+    }
+
+    document.addEventListener('keydown', async (e) => {
+      const tag = (e.target && e.target.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || e.ctrlKey || e.altKey || e.metaKey) return;
+
+      if (/^[0-9]$/.test(e.key) || (keypadBuffer.length === 0 && /^[wc]$/i.test(e.key))) {
+        if (keypadBuffer.length < 4) {
+          keypadBuffer += e.key.toUpperCase();
+          updateKeypadHud();
+        }
+        return;
+      }
+
+      if (keypadBuffer.length > 0) {
+        if (e.key === 'Backspace') {
+          e.preventDefault();
+          keypadBuffer = keypadBuffer.slice(0, -1);
+          updateKeypadHud();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          hideKeypadHud();
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          const match = findChannelByEntry(keypadBuffer);
+          hideKeypadHud();
+          if (match) {
+            const res = await window.sxmApi.selectChannel(String(match.number));
+            if (res && res.channel) {
+              updateCurrentChannelUI(res.channel);
+              state.isPlaying = res.is_playing;
+              playOrStopDirectStream(res.channel, state.isPlaying);
+              updatePlayIcon(state.isPlaying);
+            }
+          }
         }
       }
     });
@@ -2527,6 +3304,17 @@
         els.artImage.style.display = 'none';
         els.artFallback.style.display = 'flex';
       }
+      if (meta.adaptive_color && typeof meta.adaptive_color.r === 'number') {
+        state.lastAdaptiveColor = meta.adaptive_color;
+        if (state.theme === 'adaptive') {
+          applyAdaptivePalette(meta.adaptive_color);
+        }
+      } else if (!meta.artwork) {
+        state.lastAdaptiveColor = null;
+        if (state.theme === 'adaptive') {
+          applyAdaptivePalette(null);
+        }
+      }
       if (meta.auth_needed) {
         els.statusDot.className = 'status-dot auth-needed';
         els.statusText.textContent = 'SIGN IN REQUIRED (🌐)';
@@ -2557,6 +3345,7 @@
       applyTheme(init.theme || 'christmas');
       applyVolumeUI();
       applyMiniModeUI(!!init.mini_mode);
+      applyWidgetScaleUI(typeof init.widget_scale === 'number' ? init.widget_scale : 1);
       applyStartupToggleUI(!!init.launch_at_startup);
       updateCurrentChannelUI(state.currentChannel);
       renderTrackHistory();

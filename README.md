@@ -7,21 +7,26 @@ A lightweight Windows desktop radio widget for SiriusXM built with Electron.
 ### Compact Player
 ![Compact Player](screenshots/compact.png)
 
-### Channel Browser Drawer
+### Mini Bar Mode
+![Mini Bar Mode](screenshots/mini.png)
+
+### Channel Browser Drawer (Favorites & Custom Streams)
 ![Channel Browser Drawer](screenshots/expanded.png)
 
-### Theme Picker (Synthwave)
+### Themes & Settings (Synthwave)
 ![Theme Picker](screenshots/themes.png)
 
 ## Features
-- Compact floating player with expandable channel drawer, search, and genre filters
-- Play/Pause, Stop, Previous/Next channel, and **● LIVE** jump-to-live controls
-- Favorites list (with a Favorites-only channel cycling toggle)
-- Always-on-top pin mode
-- 9 built-in themes (Christmas, Blizzard, Thanksgiving, Pumpkin Spice, Autumn Woods, Hearth Gold, Midnight, Synthwave, NyQuil)
-- Theme-panel opacity dimmer (35–100%), saved between launches
-- Music-reactive Christmas lights for Free Holiday Radio streams, using live bass/energy changes when the stream permits audio analysis
-- Includes free holiday stream channels plus full SiriusXM web player integration
+- **Compact Player & Mini Bar Mode:** Floating desktop widget with a one-click 68px single-row Mini Bar mode and proportional **S / M / L / XL** size presets
+- **Expandable Channel Drawer:** Search by name, number, or genre, plus genre filter tabs, **Free Holiday Radio** streams, and full **SiriusXM Web Player** integration
+- **Playback & Volume Controls:** Play/Pause, Stop, Previous/Next channel, **● LIVE** jump-to-live, and an in-widget **Volume Slider & Mute** toggle (with mouse-wheel support) synced across both SiriusXM and direct streams
+- **Favorites with Drag-and-Drop Ordering:** Star channels, reorder your Favorites list by dragging, and toggle Favorites-only Prev/Next cycling
+- **Direct Channel Number Entry:** Type any channel number (e.g. `71`, `W1`, `C1`) while focused on the widget for a car-radio-style HUD with live preview and **Enter** to tune
+- **Custom Radio Streams:** Add your own MP3/AAC internet radio stream URLs right from the drawer (`+ Add Stream`) with custom badge codes and accent colors
+- **Surprise Me (`🎲`):** Jump to a random channel within your active filter or Favorites
+- **Recent Track History (`🕒`):** Logs the last 12 played tracks with relative timestamps and one-click copy (`Artist - Title`)
+- **10 Built-in Themes:** Christmas, Blizzard, Thanksgiving, Pumpkin Spice, Autumn Woods, Hearth Gold, Midnight, Synthwave, NyQuil, and **🌈 Adaptive** (automatically tints the widget to match the current track's album art)
+- **Visual & Desktop Polish:** Always-on-top pin mode, opacity dimmer (35–100%), music-reactive Christmas lights for Free Holiday Radio streams, remembered window position across restarts, and optional **Launch with Windows** startup toggle
 
 ## Installation
 
@@ -64,11 +69,16 @@ Start the widget using either method:
 
 ### Controls
 - **Album Art / Channel Badge:** Click to expand or collapse the channel browser drawer.
+- **Volume Slider & Speaker Icon:** Drag or scroll your mouse wheel over the volume bar to adjust volume; click the speaker icon to mute/unmute.
+- **Type a Channel Number:** While focused on the widget, type a channel number (like `71` or `W1`) and press **Enter** to tune directly (`Esc` to cancel).
 - **★ (next to channel name):** Add or remove the current channel from Favorites.
-- **★ (top bar):** Toggle Prev/Next buttons between cycling all channels vs. Favorites only.
+- **★ (top bar):** Toggle Prev/Next buttons between cycling all channels vs. Favorites only. Drag items by their `⋮⋮` handle in the **★ Favorites** tab to reorder them.
 - **● LIVE:** Jump back to the live broadcast if the stream falls behind.
-- **🎨:** Switch widget themes.
-- **🎨 → Opacity:** Dim the entire widget while keeping its transparent desktop background.
-- **🎨 → Music-reactive Christmas lights:** Toggle real-time light pulses for Free Holiday Radio. SiriusXM web-player audio is isolated in its own window and cannot be sampled by the widget.
+- **🎨 (Themes & Settings):** Switch between all 10 themes (including **🌈 Adaptive**), adjust **Opacity**, toggle **Music-reactive Christmas lights**, pick a proportional **📐 Size (S / M / L / XL)**, or enable **🚀 Launch with Windows**.
+- **🕒:** Open the **Recent Track History** (last 12 tracks) with one-click copy and Clear.
+- **🎲:** **Surprise Me** — tune to a random channel in your current filter or Favorites.
+- **▬ / ⤢:** Toggle **Mini Bar Mode** (slim single-row player) and expand back to full size.
+- **+ Add Stream (drawer footer):** Add custom internet radio stream URLs into the **📡 Custom** tab.
+- **🌐:** Show or hide the built-in SiriusXM Web Player window.
 - **📌:** Toggle Always-on-Top mode.
 - **✕:** Close the widget.
