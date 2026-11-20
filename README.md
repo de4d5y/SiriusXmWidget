@@ -32,7 +32,7 @@ A lightweight Windows desktop radio widget for SiriusXM built with Electron.
 
 ### Option 1: Download the Portable `.exe` (Easiest — No Node.js Required)
 1. Go to the [**Releases**](https://github.com/de4d5y/sxm-widget/releases) page on GitHub.
-2. Download `SiriusXM-Widget-1.0.0-Portable.exe`.
+2. Download `SiriusXM-Widget-1.1.0-Portable.exe`.
 3. Double-click it to run — no installation or extra software required.
    *(If Windows SmartScreen shows a warning on first launch, click **More info → Run anyway**.)*
 
