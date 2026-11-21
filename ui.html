@@ -2136,7 +2136,7 @@
         <button class="mini-btn" id="themeBtn" title="Themes & Startup">🎨</button>
         <button class="mini-btn" id="historyBtn" title="Recent Track History (Last 12)">🕒</button>
         <button class="mini-btn" id="surpriseBtn" title="Surprise Me (Random Channel in Current Filter)">🎲</button>
-        <button class="mini-btn" id="favCycleBtn" title="Cycle All Channels vs. Favorites Only (Prev/Next)">★</button>
+        <button class="mini-btn" id="favCycleBtn" title="Cycle Current Category vs. Favorites Only (Prev/Next)">★</button>
         <button class="mini-btn" id="loginBtn" title="Show/Hide SiriusXM Web Player (Sign In)">🌐</button>
         <button class="mini-btn" id="miniModeBtn" title="Mini Bar Mode">▬</button>
         <button class="mini-btn active" id="pinBtn" title="Toggle Always-on-Top">📌</button>
@@ -2383,6 +2383,7 @@
       drawerOpen: false,
       miniMode: false,
       activeFilter: 'all',
+      lastNonFavFilter: 'all',
       searchQuery: '',
       cycleFavoritesOnly: false,
       alwaysOnTop: true,
@@ -3829,6 +3830,7 @@
 
       // Switch to Custom tab and start playing the new stream immediately
       state.activeFilter = 'Custom';
+      state.lastNonFavFilter = 'Custom';
       state.cycleFavoritesOnly = false;
       els.favCycleBtn.classList.remove('active');
       document.querySelectorAll('.tab-pill').forEach(b => {
@@ -3952,6 +3954,9 @@
       document.querySelectorAll('.tab-pill').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       state.activeFilter = btn.dataset.filter;
+      if (state.activeFilter !== 'favorites') {
+        state.lastNonFavFilter = state.activeFilter;
+      }
       state.cycleFavoritesOnly = (state.activeFilter === 'favorites');
       els.favCycleBtn.classList.toggle('active', state.cycleFavoritesOnly);
       renderChannelList();
@@ -4005,9 +4010,36 @@
       setMarqueeText(els.trackTitle, 'Stream Stopped');
     });
 
+    function getChannelCategory(ch) {
+      if (!ch) return 'all';
+      if (ch.genre && String(ch.genre).trim()) return String(ch.genre).trim();
+      if (ch.isUserCustom) return 'Custom';
+      return 'all';
+    }
+
+    function channelMatchesFilter(ch, filter) {
+      if (!ch || !filter || filter === 'all') return false;
+      if (filter === 'favorites') return state.favorites.includes(String(ch.number));
+      if (filter === 'Custom') return !!(ch.isUserCustom || (ch.genre || '').toLowerCase() === 'custom');
+      return (ch.genre || '').toLowerCase() === filter.toLowerCase();
+    }
+
+    function getCycleFilter() {
+      if (state.cycleFavoritesOnly) {
+        return 'favorites';
+      }
+      if (state.activeFilter && state.activeFilter !== 'all' && state.activeFilter !== 'favorites') {
+        if (state.drawerOpen || channelMatchesFilter(state.currentChannel, state.activeFilter)) {
+          return state.activeFilter;
+        }
+      }
+      return getChannelCategory(state.currentChannel);
+    }
+
     els.prevBtn.addEventListener('click', async () => {
-      const effectiveFilter = state.cycleFavoritesOnly ? 'favorites' : state.activeFilter;
-      const res = await window.sxmApi.stepChannel(-1, effectiveFilter, state.searchQuery);
+      const effectiveFilter = getCycleFilter();
+      const effectiveSearch = state.drawerOpen ? state.searchQuery : '';
+      const res = await window.sxmApi.stepChannel(-1, effectiveFilter, effectiveSearch);
       if (res && res.channel) {
         updateCurrentChannelUI(res.channel);
         state.isPlaying = res.is_playing;
@@ -4017,8 +4049,9 @@
     });
 
     els.nextBtn.addEventListener('click', async () => {
-      const effectiveFilter = state.cycleFavoritesOnly ? 'favorites' : state.activeFilter;
-      const res = await window.sxmApi.stepChannel(1, effectiveFilter, state.searchQuery);
+      const effectiveFilter = getCycleFilter();
+      const effectiveSearch = state.drawerOpen ? state.searchQuery : '';
+      const res = await window.sxmApi.stepChannel(1, effectiveFilter, effectiveSearch);
       if (res && res.channel) {
         updateCurrentChannelUI(res.channel);
         state.isPlaying = res.is_playing;
@@ -4052,12 +4085,22 @@
     // Top bar utilities
     els.favCycleBtn.addEventListener('click', () => {
       state.cycleFavoritesOnly = !state.cycleFavoritesOnly;
-      state.activeFilter = state.cycleFavoritesOnly ? 'favorites' : 'all';
+      if (state.cycleFavoritesOnly) {
+        if (state.activeFilter !== 'favorites') {
+          state.lastNonFavFilter = state.activeFilter;
+        }
+        state.activeFilter = 'favorites';
+      } else {
+        state.activeFilter = state.lastNonFavFilter || 'all';
+      }
       document.querySelectorAll('.tab-pill').forEach(b => {
         b.classList.toggle('active', b.dataset.filter === state.activeFilter);
       });
       els.favCycleBtn.classList.toggle('active', state.cycleFavoritesOnly);
-      els.statusText.textContent = state.cycleFavoritesOnly ? 'CYCLE: FAVORITES ★' : 'CYCLE: ALL CHANNELS';
+      const nextFilter = getCycleFilter();
+      els.statusText.textContent = state.cycleFavoritesOnly
+        ? 'CYCLE: FAVORITES ★'
+        : `CYCLE: ${nextFilter === 'all' ? 'ALL CHANNELS' : nextFilter.toUpperCase()}`;
       renderChannelList();
     });
 
